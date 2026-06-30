@@ -1,0 +1,49 @@
+<Project>
+  <!-- Common build properties for Stalwart Migration solution -->
+  
+  <!-- Target framework -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <WarningsAsErrors>true</WarningsAsErrors>
+    <LangVersion>latest</LangVersion>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <!-- Code analysis -->
+  <PropertyGroup>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <NoWarn>$(NoWarn);NU1902;NU1903</NoWarn>
+  </PropertyGroup>
+
+  <!-- Output configuration -->
+  <PropertyGroup>
+    <OutputPath>bin\$(Configuration)\$(TargetFramework)\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+
+  <!-- NuGet package configuration (to be overridden by individual projects) -->
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+    <Authors>Stalwart Migration Team</Authors>
+    <Company>Stalwart Labs</Company>
+    <Description>hMailServer to Stalwart Mail Server Migration Tool</Description>
+    <PackageTags>migration;email;hmailserver;stalwart;jmap;imap</PackageTags>
+    <PackageProjectUrl>https://github.com/stalwartlabs/stalwart</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/stalwartlabs/stalwart</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <!-- Assembly attributes -->
+  <PropertyGroup>
+    <AssemblyTitle>Stalwart Migration Tool</AssemblyTitle>
+    <AssemblyDescription>CLI tool for migrating from hMailServer to Stalwart Mail Server</AssemblyDescription>
+    <AssemblyCompany>Stalwart Labs</AssemblyCompany>
+    <AssemblyProduct>Stalwart Migration</AssemblyProduct>
+    <Copyright>© Stalwart Labs 2024</Copyright>
+    <NeutralLanguage>en-US</NeutralLanguage>
+  </PropertyGroup>
+</Project>

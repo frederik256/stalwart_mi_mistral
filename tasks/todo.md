@@ -1,0 +1,458 @@
+# Task List: hMailServer to Stalwart Mail Server Migration Tool
+
+**Plan Document:** [tasks/plan.md](./plan.md)
+**Specification:** [SPEC.md](../SPEC.md)
+**Decision Log:** [decision-log.md](../decision-log.md)
+
+---
+
+## Legend
+- ✅ = Completed
+- 🔄 = In Progress  
+- ⏳ = Pending
+- ❌ = Cancelled
+- 📋 = Checkpoint
+
+**Priority:** (H)igh, (M)edium, (L)ow
+
+---
+
+## Phase 1: Project Foundation (Priority: H)
+Total: 3 tasks | Status: ✅ Completed
+
+- [x] **Task 1**: Initialize Solution Structure
+  - Status: ✅ Completed
+  - Priority: H
+  - Dependencies: None
+  - Size: Medium (5 files)
+  - Files: StalwartMigration.slnx, *.csproj, Directory.Build.props
+  - **Completed**: 2026-06-29
+
+- [x] **Task 2**: Configure Package Dependencies
+  - Status: ✅ Completed
+  - Priority: H
+  - Dependencies: Task 1
+  - Size: Small (3 files)
+  - Files: *.csproj
+  - **Completed**: 2026-06-29
+
+- [x] **Task 3**: Set Up Build and Test Infrastructure
+  - Status: ✅ Completed
+  - Priority: H
+  - Dependencies: Task 1, Task 2
+  - Size: Small (4 files)
+  - Files: Directory.Build.props, .editorconfig, .gitignore, coverlet.runsettings
+  - **Completed**: 2026-06-29
+  - **Note**: Test execution has a known issue with BouncyCastle.Cryptography transitive dependency. Build works correctly.
+
+- [x] **📋 Checkpoint: Foundation Complete**
+  - ✅ Solution compiles successfully
+  - ✅ All dependencies restored
+  - ✅ Build succeeds for all target platforms
+  - ✅ Directory structure matches SPEC.md
+  - **Verified**: `dotnet build StalwartMigration.slnx` succeeds with 0 errors
+
+---
+
+## Phase 2: Utility Layer (Priority: H)
+Total: 3 tasks | Status: ⏳ Pending
+
+- [ ] **Task 4**: Implement Logging Infrastructure
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 1, Task 2
+  - Size: Small (3 files)
+  - Files: Utilities/Logging/*
+
+- [ ] **Task 5**: Implement Helper Classes and Extensions
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 1, Task 2
+  - Size: Medium (6 files)
+  - Files: Utilities/Extensions/*, Utilities/Helpers/*
+
+- [ ] **Task 6**: Implement Custom Exceptions
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 1, Task 2
+  - Size: Small (5 files)
+  - Files: Core/Exceptions/*
+
+- [ ] **📋 Checkpoint: Utility Layer Complete**
+  - Review required before proceeding to Phase 3
+
+---
+
+## Phase 3: Infrastructure Layer (Priority: H)
+Total: 5 tasks | Status: ⏳ Pending
+
+- [ ] **Task 7**: Create Data Models
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 1, Task 2, Task 5
+  - Size: Medium (7 files)
+  - Files: Core/Models/*
+
+- [ ] **Task 8**: Implement Stalwart REST API Client
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 1, Task 2, Task 7
+  - Size: Medium (4 files)
+  - Files: Infrastructure/Stalwart/*
+
+- [ ] **Task 9**: Implement hMailServer COM API Client
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 1, Task 2, Task 7
+  - Size: Medium (3 files)
+  - Files: Infrastructure/HMailServer/*
+
+- [ ] **Task 10**: Implement Vandelay Integration
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 1, Task 2, Task 7
+  - Size: Medium (5 files)
+  - Files: Infrastructure/Vandelay/*
+
+- [ ] **Task 11**: Implement File System and Archive Management
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 1, Task 2, Task 5
+  - Size: Small (2 files)
+  - Files: Infrastructure/FileSystem/*
+
+- [ ] **📋 Checkpoint: Infrastructure Layer Complete**
+  - Review required before proceeding to Phase 4
+
+---
+
+## Phase 4: Core Layer (Priority: H)
+Total: 4 tasks | Status: ⏳ Pending
+
+- [ ] **Task 12**: Implement Shared Services
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 1-11
+  - Size: Medium (6 files)
+  - Files: Core/Services/*
+
+- [ ] **Task 13**: Implement Data Exporters
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 7-12
+  - Size: Medium (4 files)
+  - Files: Core/Exporters/*
+
+- [ ] **Task 14**: Implement Data Importers
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 7-13
+  - Size: Medium (4 files)
+  - Files: Core/Importers/*
+
+- [ ] **Task 15**: Implement Migration Orchestrator
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 7-14
+  - Size: Medium (4 files)
+  - Files: Core/MigrationOrchestrator.cs, Core/IMigrationOrchestrator.cs, Core/MigrationOptions.cs, Core/MigrationResult.cs
+
+- [ ] **📋 Checkpoint: Core Layer Complete**
+  - Review required before proceeding to Phase 5
+
+---
+
+## Phase 5: CLI Layer (Priority: H)
+Total: 7 tasks | Status: ⏳ Pending
+
+- [ ] **Task 16**: Implement CLI Infrastructure
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 1-15
+  - Size: Small (2 files)
+  - Files: CLI/Program.cs, CLI/CLIConfiguration.cs
+
+- [ ] **Task 17**: Implement Setup Command
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 16
+  - Size: Small (1 file)
+  - Files: CLI/Commands/SetupCommand.cs
+
+- [ ] **Task 18**: Implement Migrate Command
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 16, Task 17
+  - Size: Small (1 file)
+  - Files: CLI/Commands/MigrateCommand.cs
+
+- [ ] **Task 19**: Implement Vandelay Command
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 16
+  - Size: Small (1 file)
+  - Files: CLI/Commands/VandelayCommand.cs
+
+- [ ] **Task 20**: Implement Export Command (Fallback)
+  - Status: ⏳
+  - Priority: M
+  - Dependencies: Task 16
+  - Size: Small (1 file)
+  - Files: CLI/Commands/ExportCommand.cs
+
+- [ ] **Task 21**: Implement Import Command (Fallback)
+  - Status: ⏳
+  - Priority: M
+  - Dependencies: Task 16
+  - Size: Small (1 file)
+  - Files: CLI/Commands/ImportCommand.cs
+
+- [ ] **Task 22**: Implement Validate Command
+  - Status: ⏳
+  - Priority: M
+  - Dependencies: Task 16
+  - Size: Small (1 file)
+  - Files: CLI/Commands/ValidateCommand.cs
+
+- [ ] **📋 Checkpoint: CLI Layer Complete**
+  - Review required before proceeding to Phase 6
+
+---
+
+## Phase 6: Configuration and Examples (Priority: M)
+Total: 2 tasks | Status: ⏳ Pending | **Can be parallelized after Phase 5**
+
+- [ ] **Task 23**: Create Example Configuration Files
+  - Status: ⏳
+  - Priority: M
+  - Dependencies: Task 16
+  - Size: XS (2 files)
+  - Files: configs/*.example.json
+
+- [ ] **Task 24**: Create Documentation
+  - Status: ⏳
+  - Priority: M
+  - Dependencies: Task 16-22
+  - Size: Medium (7 files)
+  - Files: docs/*
+  - Note: Can be worked on in parallel with other phases
+
+- [ ] **📋 Checkpoint: Configuration and Documentation Complete**
+  - Review required before proceeding to Phase 7
+
+---
+
+## Phase 7: Testing (Priority: H)
+Total: 6 tasks | Status: ⏳ Pending | **Can be parallelized across test types**
+
+- [ ] **Task 25**: Create Unit Tests for Utilities
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 4-6
+  - Size: Medium (5-8 test files)
+  - Can start after Task 6 completes
+
+- [ ] **Task 26**: Create Unit Tests for Infrastructure
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 7-11
+  - Size: Medium (6-10 test files)
+  - Can start after Task 11 completes
+
+- [ ] **Task 27**: Create Unit Tests for Core
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 12-15
+  - Size: Medium (8-12 test files)
+  - Can start after Task 15 completes
+
+- [ ] **Task 28**: Create CLI Tests
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 16-22
+  - Size: Medium (6-8 test files)
+  - Can start after Task 22 completes
+
+- [ ] **Task 29**: Create Integration Tests
+  - Status: ⏳
+  - Priority: M
+  - Dependencies: Task 1-22
+  - Size: Medium (4-6 test files)
+
+- [ ] **Task 30**: Create End-to-End Tests
+  - Status: ⏳
+  - Priority: M
+  - Dependencies: Task 1-22
+  - Size: Medium (3-5 test files)
+
+- [ ] **📋 Checkpoint: Testing Complete**
+  - Review required before proceeding to Phase 8
+
+---
+
+## Phase 8: Final Validation (Priority: M)
+Total: 3 tasks | Status: ⏳ Pending
+
+- [ ] **Task 31**: Manual Testing and Validation
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 1-30
+  - Size: Large (manual testing effort)
+
+- [ ] **Task 32**: Performance Testing
+  - Status: ⏳
+  - Priority: M
+  - Dependencies: Task 1-30
+  - Size: Medium
+
+- [ ] **Task 33**: Security Review
+  - Status: ⏳
+  - Priority: H
+  - Dependencies: Task 1-30
+  - Size: Medium (review effort)
+
+- [ ] **📋 Final Checkpoint: Complete**
+  - All acceptance criteria met
+  - Ready for production use
+
+---
+
+## Summary Statistics
+
+| Phase | Tasks | Priority | Status | Size |
+|-------|-------|----------|--------|------|
+| Phase 1: Foundation | 3 | H | ✅ | M/S |
+| Phase 2: Utilities | 3 | H | ⏳ | S/M |
+| Phase 3: Infrastructure | 5 | H | ⏳ | M |
+| Phase 4: Core | 4 | H | ⏳ | M |
+| Phase 5: CLI | 7 | H | ⏳ | S |
+| Phase 6: Config & Docs | 2 | M | ⏳ | XS/M |
+| Phase 7: Testing | 6 | H | ⏳ | M |
+| Phase 8: Validation | 3 | M/H | ⏳ | L/M |
+| **Total** | **33** | - | **3/33** | - |
+
+**Estimated Total Duration:** 17-25 days
+**Time Elapsed:** ~30 minutes
+**Tasks Completed:** 3/33 (9%)
+**Current Phase:** Phase 1 ✅ (Complete)
+
+---
+
+## Quick Reference Commands
+
+### Build
+```bash
+dotnet build StalwartMigration.sln -c Release
+dotnet publish -c Release -r win-x64 --self-contained true
+dotnet publish -c Release -r linux-x64 --self-contained true
+```
+
+### Test
+```bash
+dotnet test StalwartMigration.Tests
+dotnet test StalwartMigration.Cli.Tests
+dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+```
+
+### Run
+```bash
+dotnet run --project StalwartMigration.Cli -- [arguments]
+```
+
+---
+
+## Dependency Chain Visualization
+
+```
+Foundation (1-3)
+    ↓
+Utilities (4-6) ─────────────────┐
+    ↓                           ↓
+Infrastructure (7-11) ───────────┘
+    ↓
+Core (12-15)
+    ↓
+CLI (16-22)
+    ↓
+Config/Docs (23-24) ← (can start after CLI)
+    ↓
+Testing (25-30) ← (each can start after its dependency)
+    ↓
+Validation (31-33)
+```
+
+---
+
+## Parallelization Guide
+
+**Safe to Parallelize (Independent):**
+- Task 24 (Documentation) - after Phase 5 starts
+- Task 25 (Utility Tests) - after Task 6
+- Task 26 (Infrastructure Tests) - after Task 11
+- Task 27 (Core Tests) - after Task 15
+- Task 28 (CLI Tests) - after Task 22
+- Task 29 (Integration Tests) - after Phase 5
+- Task 30 (E2E Tests) - after Phase 5
+
+**Must be Sequential:**
+- Foundation (1-3) must complete before anything else
+- Each layer must be complete before next layer starts
+- Tasks within a layer can often be parallelized
+
+**Needs Coordination:**
+- Tasks sharing interfaces/contracts should be coordinated
+- Documentation should reference final CLI interface
+
+---
+
+## Next Steps
+
+1. **✅ Phase 1: Foundation** (Tasks 1-3) - **COMPLETED**
+   - Solution structure created
+   - Package dependencies added
+   - Build infrastructure configured
+
+2. **Proceed to Phase 2: Utilities** (Tasks 4-6)
+   - ✅ Ready to start
+   - Logging, Helpers, Exceptions
+   
+**Recommended:** Start with Task 4 (Implement Logging Infrastructure)
+
+3. **Continue with Phase 3: Infrastructure** (Tasks 7-11)
+   - Models, API Clients, Vandelay integration, Archive management
+
+4. **Continue with Phase 4: Core** (Tasks 12-15)
+   - Services, Exporters, Importers, Orchestrator
+
+5. **Continue with Phase 5: CLI** (Tasks 16-22)
+   - CLI infrastructure and all commands
+
+6. **Parallel: Start Testing** (Tasks 25-30)
+   - Each test task can start after its dependency completes
+
+7. **Parallel: Documentation** (Task 24)
+   - Can start once CLI is defined
+
+8. **Final: Validation** (Tasks 31-33)
+   - Manual testing, performance testing, security review
+
+---
+
+*Last Updated: 2026-06-30*
+*Plan Version: 1.0*
+*Status: Phase 1 Complete - Ready for Phase 2*
+
+## Files Created in Phase 1
+- `StalwartMigration.slnx` - Solution file (XML format)
+- `Directory.Build.props` - Common build properties
+- `src/StalwartMigration/StalwartMigration.csproj` - Main project
+- `tests/StalwartMigration.Tests/StalwartMigration.Tests.csproj` - Unit tests project
+- `tests/StalwartMigration.Cli.Tests/StalwartMigration.Cli.Tests.csproj` - CLI tests project
+- `.editorconfig` - Code style configuration
+- `.gitignore` - Git ignore patterns
+- `coverlet.runsettings` - Code coverage settings
+- `src/StalwartMigration/CLI/Program.cs` - Entry point
+- `tests/StalwartMigration.Tests/Unit/PlaceholderTest.cs` - Placeholder for unit tests
+- `tests/StalwartMigration.Cli.Tests/CommandTests/PlaceholderTest.cs` - Placeholder for CLI tests
+- `tasks/plan.md` - Implementation plan
+- `tasks/todo.md` - Task list

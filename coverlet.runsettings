@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<RunSettings>
+  <!-- Code coverage configuration for coverlet -->
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>json,cobertura,opencover</Format>
+          <Include>[StalwartMigration]*</Include>
+          <Exclude>[*.Tests]*</Exclude>
+          <Exclude>[*.Cli.Tests]*</Exclude>
+          <MergeWith>"/tmp/coverage.json"</MergeWith>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

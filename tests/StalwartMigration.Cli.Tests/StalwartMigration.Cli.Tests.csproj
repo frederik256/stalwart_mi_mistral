@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <RootNamespace>StalwartMigration.Cli.Tests</RootNamespace>
+    <IsTestProject>true</IsTestProject>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PackageId>StalwartMigration.Cli.Tests</PackageId>
+  </PropertyGroup>
+
+  <!-- Package dependencies -->
+  <ItemGroup>
+    <!-- Test framework -->
+    <PackageReference Include="xunit" Version="2.4.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    
+    <!-- Mocking -->
+    <PackageReference Include="Moq" Version="4.18.4" />
+    
+    <!-- Assertions -->
+    <PackageReference Include="FluentAssertions" Version="6.9.0" />
+    
+    <!-- Coverage -->
+    <PackageReference Include="coverlet.collector" Version="3.2.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- Project reference -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\StalwartMigration\StalwartMigration.csproj" />
+  </ItemGroup>
+
+</Project>

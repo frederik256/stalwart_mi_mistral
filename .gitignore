@@ -1,0 +1,77 @@
+# .NET Core
+**/bin/
+**/obj/
+**/bin/
+**/obj/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio
+*.userprefs
+.vs/
+.idea/
+*.csproj.user
+
+# NuGet
+**/packages/
+*.nupkg
+
+# Build results
+*.dll
+*.exe
+*.pdb
+*.manifest
+*.cache
+
+# Test results
+**/TestResults/
+**/Coverage/
+
+# IDE
+.vspscc
+*.vssscc
+
+# ReSharper
+_ReSharper*/
+*.resharper
+*.DotSettings.user
+
+# Rider
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+*.log.*
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+
+# Configuration files with secrets (should never be committed)
+*config*.json
+!configs/*.example.json
+*.secret
+*.key
+*.pem
+
+# Docker
+.docker/
+
+# Local build outputs
+*/publish/
+*/dist/

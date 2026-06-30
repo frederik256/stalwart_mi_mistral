@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/StalwartMigration/StalwartMigration.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/StalwartMigration.Cli.Tests/StalwartMigration.Cli.Tests.csproj" />
+    <Project Path="tests/StalwartMigration.Tests/StalwartMigration.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,61 @@
+# EditorConfig for Stalwart Migration project
+# See https://editorconfig.org for documentation
+
+root = true
+
+# Default settings for all files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+tab_width = 4
+trim_trailing_whitespace = true
+
+# C# files
+[*.cs]
+csharp_new_line_before_open_brace = none
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_new_line_before_members_in_object_initializers = true
+csharp_new_line_between_query_expression_clauses = true
+csharp_space_after_cast = false
+csharp_space_after_keywords_in_control_flow_statements = true
+csharp_space_between_empty_braces = false
+csharp_space_between_method_call_parameter_list_parentheses = false
+csharp_space_between_method_call_empty_parameter_list_parentheses = false
+csharp_space_after_method_call_name = false
+csharp_space_between_method_declaration_parameter_list_parentheses = false
+csharp_space_between_method_declaration_empty_parameter_list_parentheses = false
+csharp_space_after_method_declaration_name = false
+csharp_space_between_parentheses = false
+csharp_preserve_single_line_statements = true
+csharp_preserve_single_line_accessors = true
+
+# Maximum line length: 120 characters (from SPEC.md)
+[*.cs]
+max_line_length = 120
+
+# Naming conventions (from SPEC.md):
+# - Classes: PascalCase
+# - Interfaces: IPascalCase
+# - Methods: PascalCase
+# - Properties: PascalCase
+# - Parameters: camelCase
+# - Local Variables: camelCase
+# - Constants: UPPER_SNAKE_CASE
+# - Private fields: _fieldName (underscore prefix)
+
+# Solution files
+[*.sln]
+indent_size = 2
+
+# XML files
+[*.xml]
+indent_size = 2
+
+# JSON files
+[*.json]
+indent_size = 2
