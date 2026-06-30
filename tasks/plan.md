@@ -19,6 +19,22 @@ Build a standalone CLI migration tool that enables users to migrate from hMailSe
 - **Docker Scope**: API-only approach - tool interacts with Stalwart exclusively through REST API
 - **Conflict Resolution**: Merge strategy (non-destructive) - update existing, skip duplicates by Message-ID
 
+## Phases Overview
+
+### Phase 1: Project Foundation (Completed ✅)
+- Tasks 1-3: Solution structure, dependencies, build infrastructure
+- **Status**: Complete - Build and tests passing
+- **Repository**: https://github.com/frederik256/stalwart_mi_mistral
+
+### Phase 1.1: CI/CD Pipeline Setup
+- Task 3.1-3.2: GitHub Actions workflow, verification
+- **Purpose**: Ensure automated builds for Linux and Windows
+- **Dependency**: Phase 1 must be complete
+
+### Phase 2: Utility Layer
+- Tasks 4-6: Logging, helpers, exceptions
+- **Dependency**: Phase 1.1 must be complete
+
 ## Dependency Graph
 
 ```
@@ -189,11 +205,73 @@ Documentation (Can be parallel)
 ---
 
 ### Checkpoint: Foundation Complete
-- [ ] Solution compiles successfully
-- [ ] All dependencies restored
-- [ ] Build succeeds for all target platforms
-- [ ] Directory structure matches SPEC.md
-- [ ] Review with human before proceeding to Infrastructure phase
+- [x] Solution compiles successfully
+- [x] All dependencies restored
+- [x] Build succeeds for all target platforms
+- [x] Directory structure matches SPEC.md
+- [x] Tests pass with 0 errors
+- [ ] Review with human before proceeding to CI/CD phase
+
+---
+
+### Phase 1.1: CI/CD Pipeline Setup
+
+#### Task 3.1: Create GitHub Actions Build Pipeline
+**Description**: Create a GitHub Actions workflow that builds the solution for both Linux and Windows platforms, runs tests, and publishes artifacts.
+
+**Acceptance criteria:**
+- [ ] `.github/workflows/build.yml` exists
+- [ ] Workflow triggers on push to main branch
+- [ ] Workflow triggers on pull requests to main branch
+- [ ] Build job for Linux (ubuntu-latest) with rid: linux-x64
+- [ ] Build job for Windows (windows-latest) with rid: win-x64
+- [ ] Restore, build, and test steps for each platform
+- [ ] Publish artifacts for both platforms
+- [ ] Upload artifacts for download
+
+**Verification:**
+- [ ] Workflow file is syntactically valid
+- [ ] Workflow can be triggered manually
+- [ ] Build succeeds on GitHub Actions
+
+**Dependencies:** Task 1-3
+
+**Files likely touched:**
+- `.github/workflows/build.yml`
+
+**Estimated scope:** Small (1 file)
+
+---
+
+#### Task 3.2: Verify GitHub Actions Build is Green
+**Description**: Ensure the GitHub Actions workflow runs successfully and produces green builds for both Linux and Windows.
+
+**Acceptance criteria:**
+- [ ] GitHub Actions workflow runs without errors
+- [ ] All jobs complete successfully
+- [ ] Build artifacts are produced for both platforms
+- [ ] Tests pass on GitHub Actions
+
+**Verification:**
+- [ ] Check GitHub Actions tab in repository
+- [ ] Verify green checkmark for latest commit
+- [ ] Download and verify Linux artifact
+- [ ] Download and verify Windows artifact
+
+**Dependencies:** Task 3.1
+
+**Files likely touched:** None (verification only)
+
+**Estimated scope:** Small (verification effort)
+
+---
+
+### Checkpoint: CI/CD Pipeline Complete
+- [ ] GitHub Actions workflow is configured
+- [ ] Build succeeds on GitHub Actions
+- [ ] Tests pass on GitHub Actions
+- [ ] Artifacts are published for both Linux and Windows
+- [ ] Review with human before proceeding to Utilities phase
 
 ---
 
@@ -1146,6 +1224,19 @@ cd stalwart_mi_mistral
 | Phase 8: Validation | 31-33 | 2-3 days |
 | **Total** | **33 tasks** | **17-25 days** |
 
+## Implementation Notes
+
+### Test Framework
+- **Changed from xUnit to MSTest** in Phase 1 due to .NET 10 SDK compatibility issues with xUnit's transitive dependencies (BouncyCastle.Cryptography).
+- MSTest 3.0.1 with Microsoft.NET.Test.Sdk 17.6.0 works correctly with the current environment.
+- This decision allows Phase 1.1 (GitHub Actions) to proceed without blocking on test framework issues.
+
+### Phase 1.1: CI/CD Pipeline
+- Added as a new phase between Foundation and Utilities
+- Ensures that every phase has automated build verification
+- GitHub Actions workflow targets both Linux (ubuntu-latest) and Windows (windows-latest)
+- Publish artifacts for both platforms using RID-specific builds
+
 ## Notes
 
 - This plan follows **vertical slicing** where each phase delivers a working layer
@@ -1154,3 +1245,4 @@ cd stalwart_mi_mistral
 - Checkpoints between phases ensure quality before proceeding
 - The tool complements Vandelay by filling its gaps (accounts, domains, aliases)
 - The primary migration path uses Vandelay for data; fallback path uses custom export/import
+- **Commit Policy**: Plan and todos commit to GitHub only on successful build and tests

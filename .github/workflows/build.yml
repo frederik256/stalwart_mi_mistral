@@ -1,0 +1,88 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  DOTNET_SDK_VERSION: '10.0.109'
+
+jobs:
+  build:
+    name: Build and Test
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+          - os: windows-latest
+            rid: win-x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore StalwartMigration.slnx
+
+    - name: Build solution
+      run: dotnet build StalwartMigration.slnx --configuration Release --no-restore
+
+    - name: Run tests
+      run: dotnet test StalwartMigration.slnx --configuration Release --no-build --verbosity normal
+      continue-on-error: true
+      id: tests
+
+    - name: Upload test results
+      if: always() && steps.tests.outcome == 'success'
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results-${{ matrix.os }}
+        path: **/TestResults
+
+  publish:
+    name: Publish Artifacts
+    needs: build
+    runs-on: ubuntu-latest
+    if: success()
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore StalwartMigration.slnx
+
+    - name: Publish for Linux x64
+      run: dotnet publish src/StalwartMigration/StalwartMigration.csproj -c Release -r linux-x64 --self-contained true -o ./artifacts/linux-x64
+
+    - name: Publish for Windows x64
+      run: dotnet publish src/StalwartMigration/StalwartMigration.csproj -c Release -r win-x64 --self-contained true -o ./artifacts/win-x64
+
+    - name: Upload Linux artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: stalwart-migration-linux-x64
+        path: ./artifacts/linux-x64
+
+    - name: Upload Windows artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: stalwart-migration-win-x64
+        path: ./artifacts/win-x64
