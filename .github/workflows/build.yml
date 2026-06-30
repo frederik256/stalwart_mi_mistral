@@ -8,7 +8,6 @@ on:
 
 env:
   DOTNET_VERSION: '8.0.x'
-  DOTNET_SDK_VERSION: '10.0.109'
 
 jobs:
   build:
@@ -34,13 +33,13 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Restore dependencies
-      run: dotnet restore StalwartMigration.slnx
+      run: dotnet restore StalwartMigration.sln
 
     - name: Build solution
-      run: dotnet build StalwartMigration.slnx --configuration Release --no-restore
+      run: dotnet build StalwartMigration.sln --configuration Release --no-restore
 
     - name: Run tests
-      run: dotnet test StalwartMigration.slnx --configuration Release --no-build --verbosity normal
+      run: dotnet test StalwartMigration.sln --configuration Release --no-build --verbosity normal
       continue-on-error: true
       id: tests
 
@@ -67,7 +66,7 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Restore dependencies
-      run: dotnet restore StalwartMigration.slnx
+      run: dotnet restore StalwartMigration.sln
 
     - name: Publish for Linux x64
       run: dotnet publish src/StalwartMigration/StalwartMigration.csproj -c Release -r linux-x64 --self-contained true -o ./artifacts/linux-x64
