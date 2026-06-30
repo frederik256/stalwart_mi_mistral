@@ -45,7 +45,7 @@ jobs:
 
     - name: Upload test results
       if: always() && steps.tests.outcome == 'success'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-results-${{ matrix.os }}
         path: '**/TestResults'
@@ -75,13 +75,13 @@ jobs:
       run: dotnet publish src/StalwartMigration/StalwartMigration.csproj -c Release -r win-x64 --self-contained true -o ./artifacts/win-x64
 
     - name: Upload Linux artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: stalwart-migration-linux-x64
         path: './artifacts/linux-x64'
 
     - name: Upload Windows artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: stalwart-migration-win-x64
         path: './artifacts/win-x64'
