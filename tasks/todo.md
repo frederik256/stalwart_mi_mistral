@@ -1,5 +1,8 @@
 # Task List: hMailServer to Stalwart Mail Server Migration Tool
 
+**Repository:** https://github.com/frederik256/stalwart_mi_mistral
+**Branch:** `main`
+
 **Plan Document:** [tasks/plan.md](./plan.md)
 **Specification:** [SPEC.md](../SPEC.md)
 **Decision Log:** [decision-log.md](../decision-log.md)
@@ -338,6 +341,20 @@ Total: 3 tasks | Status: ⏳ Pending
 
 ---
 
+## Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/frederik256/stalwart_mi_mistral.git
+cd stalwart_mi_mistral
+
+# Build the solution
+dotnet build StalwartMigration.slnx
+
+# Run tests
+dotnet test StalwartMigration.slnx
+```
+
 ## Quick Reference Commands
 
 ### Build
@@ -456,3 +473,6 @@ Validation (31-33)
 - `tests/StalwartMigration.Cli.Tests/CommandTests/PlaceholderTest.cs` - Placeholder for CLI tests
 - `tasks/plan.md` - Implementation plan
 - `tasks/todo.md` - Task list
+- `.git/` - Git repository initialized
+
+**Repository:** https://github.com/frederik256/stalwart_mi_mistral

@@ -1,5 +1,10 @@
 # Implementation Plan: hMailServer to Stalwart Mail Server Migration Tool
 
+## Repository
+- **URL**: https://github.com/frederik256/stalwart_mi_mistral
+- **Status**: Active (Foundation phase complete)
+- **Branch**: `main`
+
 ## Overview
 Build a standalone CLI migration tool that enables users to migrate from hMailServer (Windows) to Stalwart Mail Server running in Docker containers. The tool complements Vandelay by handling what it cannot: accounts, domains, and aliases. Vandelay handles the heavy lifting of data migration (mail, contacts, calendars, etc.) via IMAP→JMAP.
 
@@ -1111,6 +1116,21 @@ The following tasks can be worked on in parallel once their dependencies are sat
 ## Open Questions
 
 None at this time. All major design decisions have been resolved as documented in `decision-log.md`.
+
+## Repository Setup
+
+The project is hosted on GitHub with the following configuration:
+
+- **Repository**: https://github.com/frederik256/stalwart_mi_mistral
+- **Branch**: `main`
+- **Initial Commit**: Foundation phase complete (solution structure, project files, build configuration)
+- **GitHub Actions**: To be configured in later phases
+
+**Clone the repository:**
+```bash
+git clone https://github.com/frederik256/stalwart_mi_mistral.git
+cd stalwart_mi_mistral
+```
 
 ## Estimated Timeline
 
