@@ -27,8 +27,10 @@ public static class LoggingConfiguration
         services.AddLogging(configure => configure
             .AddConsole(options =>
             {
+#pragma warning disable CS0618 // ConsoleLoggerOptions.TimestampFormat and IncludeScopes are deprecated
                 options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
                 options.IncludeScopes = true;
+#pragma warning restore CS0618
                 options.LogToStandardErrorThreshold = LogLevel.Error;
             })
             .AddFilter("StalwartMigration", logLevel)
