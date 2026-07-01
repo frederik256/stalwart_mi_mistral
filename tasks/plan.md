@@ -390,20 +390,20 @@ Documentation (Can be parallel)
 **Description**: Implement the core data models as defined in SPEC.md project structure. These are the foundational data structures used throughout the application.
 
 **Acceptance criteria:**
-- [ ] `Domain` class with Name, Id, Properties
-- [ ] `Account` class with Name, Email, Id, Quota, Forwarding, etc.
-- [ ] `EmailMessage` class with MessageId, Subject, From, To, Date, Body, Attachments
-- [ ] `EmailAlias` class with Source, Destination
-- [ ] `MigrationState` class for checkpoint/resume capability
-- [ ] `MigrationProgress` class for progress reporting
-- [ ] All models are immutable where appropriate
-- [ ] All models have proper validation
+- [x] `Domain` class with Name, Id, Properties
+- [x] `Account` class with Name, Email, Id, Quota, Forwarding, etc.
+- [x] `EmailMessage` class with MessageId, Subject, From, To, Date, Body, Attachments
+- [x] `EmailAlias` class with Source, Destination
+- [x] `MigrationState` class for checkpoint/resume capability
+- [x] `MigrationProgress` class for progress reporting
+- [x] All models are immutable where appropriate
+- [x] All models have proper validation
 
 **Verification:**
-- [ ] Models can be serialized/deserialized to JSON
-- [ ] Validation works correctly
+- [x] Models can be serialized/deserialized to JSON
+- [x] Validation works correctly
 - [ ] Unit tests for model validation
-- [ ] Build succeeds
+- [x] Build succeeds
 
 **Dependencies:** Task 1, Task 2, Task 5
 
@@ -417,6 +417,7 @@ Documentation (Can be parallel)
 - `Core/Models/Progress/ProgressReport.cs`
 
 **Estimated scope:** Medium (7 files)
+**Completed:** 2026-07-01
 
 ---
 
@@ -424,20 +425,20 @@ Documentation (Can be parallel)
 **Description**: Create the Stalwart API integration layer as defined in SPEC.md. This client communicates with Stalwart's REST API v1.
 
 **Acceptance criteria:**
-- [ ] `StalwartClient` class with HTTP client configuration
-- [ ] Authentication support (basic auth with credentials)
-- [ ] Request timeout and retry logic (exponential backoff)
-- [ ] `StalwartApiModels` for API request/response DTOs
-- [ ] Domain CRUD operations (create, read, update, delete)
-- [ ] Account CRUD operations
-- [ ] Alias CRUD operations
-- [ ] Health check endpoint
-- [ ] Error handling for API responses
+- [x] `StalwartClient` class with HTTP client configuration
+- [x] Authentication support (basic auth with credentials)
+- [x] Request timeout and retry logic (exponential backoff)
+- [x] `StalwartApiModels` for API request/response DTOs
+- [x] Domain CRUD operations (create, read, update, delete)
+- [x] Account CRUD operations
+- [x] Alias CRUD operations
+- [x] Health check endpoint
+- [x] Error handling for API responses
 
 **Verification:**
 - [ ] Unit tests with mocked HTTP client
-- [ ] Build succeeds
-- [ ] All API endpoints covered
+- [x] Build succeeds
+- [x] All API endpoints covered
 
 **Dependencies:** Task 1, Task 2, Task 7
 
@@ -448,6 +449,7 @@ Documentation (Can be parallel)
 - `Infrastructure/Stalwart/StalwartClientException.cs`
 
 **Estimated scope:** Medium (4 files)
+**Completed:** 2026-07-01
 
 ---
 
