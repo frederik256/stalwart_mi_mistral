@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using StalwartMigration.Core.Models;
 
 namespace StalwartMigration.Infrastructure.Stalwart;
 
@@ -16,7 +17,7 @@ namespace StalwartMigration.Infrastructure.Stalwart;
 /// Provides HTTP client configuration, authentication, retry logic, and CRUD operations
 /// for domains, accounts, and aliases.
 /// </summary>
-public class StalwartClient : IDisposable
+public class StalwartClient : IStalwartClient
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<StalwartClient> _logger;
@@ -415,6 +416,139 @@ public class StalwartClient : IDisposable
         var jitter = Random.Shared.NextDouble() * delay.TotalMilliseconds * 0.25;
         return delay + TimeSpan.FromMilliseconds(jitter);
     }
+
+    // ========================================================================
+    // IStalwartClient Interface Implementation
+    // Using explicit interface implementation to avoid method name conflicts
+    // with existing public methods that have different parameter types.
+    // ========================================================================
+
+    Task IStalwartClient.AuthenticateAsync(ApiCredentials credentials, CancellationToken cancellationToken)
+        => AuthenticateAsync(credentials, cancellationToken);
+
+    async Task<Domain> IStalwartClient.CreateDomainAsync(Domain domain, CancellationToken cancellationToken)
+    {
+        var request = new DomainRequest
+        {
+            Name = domain.Name,
+            Description = domain.Description,
+            Quota = domain.Quota,
+            MaxAccounts = domain.MaxAccounts
+        };
+        var response = await CreateDomainAsync(request, cancellationToken).ConfigureAwait(false);
+        return MapToDomain(response);
+    }
+
+    async Task<Domain?> IStalwartClient.GetDomainAsync(string domainName, CancellationToken cancellationToken)
+    {
+        var response = await GetDomainByNameAsync(domainName, cancellationToken).ConfigureAwait(false);
+        return response != null ? MapToDomain(response) : null;
+    }
+
+    async Task<Account> IStalwartClient.CreateAccountAsync(Account account, CancellationToken cancellationToken)
+    {
+        var request = new AccountRequest
+        {
+            Name = account.Name,
+            DisplayName = account.DisplayName,
+            Password = account.Password,
+            Quota = account.Quota,
+            Enabled = account.IsEnabled,
+            Forwarding = account.ForwardingAddresses
+        };
+        var response = await CreateAccountAsync(request, cancellationToken).ConfigureAwait(false);
+        return MapToAccount(response);
+    }
+
+    async Task<Account> IStalwartClient.UpdateAccountAsync(string accountId, Account account, CancellationToken cancellationToken)
+    {
+        var request = new AccountRequest
+        {
+            Name = account.Name,
+            DisplayName = account.DisplayName,
+            Password = account.Password,
+            Quota = account.Quota,
+            Enabled = account.IsEnabled,
+            Forwarding = account.ForwardingAddresses
+        };
+        var response = await UpdateAccountAsync(accountId, request, cancellationToken).ConfigureAwait(false);
+        return MapToAccount(response);
+    }
+
+    async Task<EmailAlias> IStalwartClient.CreateAliasAsync(EmailAlias alias, CancellationToken cancellationToken)
+    {
+        var request = new AliasRequest
+        {
+            Source = alias.Source,
+            Destination = alias.Destination
+        };
+        var response = await CreateAliasAsync(request, cancellationToken).ConfigureAwait(false);
+        return MapToAlias(response);
+    }
+
+    Task<bool> IStalwartClient.ImportMessageAsync(string accountId, string emlContent, CancellationToken cancellationToken)
+        => throw new NotImplementedException("Message import via API is not yet implemented. Use Vandelay for message migration.");
+
+    Task<bool> IStalwartClient.ImportAttachmentAsync(string accountId, string messageId, byte[] attachmentData, string fileName, CancellationToken cancellationToken)
+        => throw new NotImplementedException("Attachment import via API is not yet implemented. Use Vandelay for message migration.");
+
+    async Task<bool> IStalwartClient.CheckHealthAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await HealthCheckAsync(cancellationToken).ConfigureAwait(false);
+            return response != null;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>Maps DomainResponse to Domain model.</summary>
+    private static Domain MapToDomain(DomainResponse response)
+        => new Domain
+        {
+            Id = response.Id,
+            Name = response.Name ?? string.Empty,
+            Description = response.Description,
+            IsEnabled = response.Enabled,
+            Quota = response.Quota,
+            MaxAccounts = response.MaxAccounts,
+            CreatedAt = response.CreatedAt,
+            UpdatedAt = response.UpdatedAt
+        };
+
+    /// <summary>Maps AccountResponse to Account model.</summary>
+    private static Account MapToAccount(AccountResponse response)
+        => new Account
+        {
+            Id = response.Id,
+            Name = response.Name ?? string.Empty,
+            Email = response.Email ?? string.Empty,
+            DisplayName = response.DisplayName,
+            IsEnabled = response.Enabled,
+            Quota = response.Quota,
+            UsedQuota = response.UsedQuota,
+            ForwardingAddresses = response.Forwarding ?? new(),
+            ForwardingEnabled = true,
+            KeepForwardedCopy = response.KeepForwardedCopy,
+            DomainId = response.DomainId,
+            CreatedAt = response.CreatedAt,
+            UpdatedAt = response.UpdatedAt
+        };
+
+    /// <summary>Maps AliasResponse to EmailAlias model.</summary>
+    private static EmailAlias MapToAlias(AliasResponse response)
+        => new EmailAlias
+        {
+            Id = response.Id,
+            Source = response.Source ?? string.Empty,
+            Destination = response.Destination ?? string.Empty,
+            IsEnabled = response.Enabled,
+            CreatedAt = response.CreatedAt,
+            UpdatedAt = response.UpdatedAt
+        };
 
     /// <summary>Disposes the HTTP client.</summary>
     public void Dispose()
