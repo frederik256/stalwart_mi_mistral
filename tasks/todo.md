@@ -147,50 +147,56 @@ Total: 5 tasks | Status: ✅ Completed
 ---
 
 ## Phase 4: Core Layer (Priority: H)
-Total: 4 tasks | Status: ⏳ Pending
+Total: 4 tasks | Status: ✅ Completed
 
-- [ ] **Task 12**: Implement Shared Services
-  - Status: ⏳
+- [x] **Task 12**: Implement Shared Services
+  - Status: ✅ Completed
   - Priority: H
   - Dependencies: Task 1-11
   - Size: Medium (6 files)
   - Files: Core/Services/*
+  - **Completed**: 2026-07-02
 
-- [ ] **Task 13**: Implement Data Exporters
-  - Status: ⏳
+- [x] **Task 13**: Implement Data Exporters
+  - Status: ✅ Completed
   - Priority: H
   - Dependencies: Task 7-12
   - Size: Medium (4 files)
   - Files: Core/Exporters/*
+  - **Completed**: 2026-07-02
 
-- [ ] **Task 14**: Implement Data Importers
-  - Status: ⏳
+- [x] **Task 14**: Implement Data Importers
+  - Status: ✅ Completed
   - Priority: H
   - Dependencies: Task 7-13
   - Size: Medium (4 files)
   - Files: Core/Importers/*
+  - **Completed**: 2026-07-02
 
-- [ ] **Task 15**: Implement Migration Orchestrator
-  - Status: ⏳
+- [x] **Task 15**: Implement Migration Orchestrator
+  - Status: ✅ Completed
   - Priority: H
   - Dependencies: Task 7-14
   - Size: Medium (4 files)
   - Files: Core/MigrationOrchestrator.cs, Core/IMigrationOrchestrator.cs, Core/MigrationOptions.cs, Core/MigrationResult.cs
+  - **Completed**: 2026-07-02
 
-- [ ] **📋 Checkpoint: Core Layer Complete**
+- [x] **📋 Checkpoint: Core Layer Complete**
   - Review required before proceeding to Phase 5
 
 ---
 
 ## Phase 5: CLI Layer (Priority: H)
-Total: 7 tasks | Status: ⏳ Pending
+Total: 7 tasks | Status: 🔄 In Progress (1/7 complete)
 
-- [ ] **Task 16**: Implement CLI Infrastructure
-  - Status: ⏳
+- [x] **Task 16**: Implement CLI Infrastructure
+  - Status: ✅ Completed
   - Priority: H
   - Dependencies: Task 1-15
-  - Size: Small (2 files)
-  - Files: CLI/Program.cs, CLI/CLIConfiguration.cs
+  - Size: Medium (8 files)
+  - Files: CLI/Program.cs, CLI/Commands/CommandBase.cs, CLI/Commands/*CommandHandler.cs
+  - **Completed**: 2026-07-02
+  - **Note**: Implemented with command handlers pattern
 
 - [ ] **Task 17**: Implement Setup Command
   - Status: ⏳
@@ -345,17 +351,17 @@ Total: 3 tasks | Status: ⏳ Pending
 | Phase 1.1: CI/CD | 2 | H | ✅ | S |
 | Phase 2: Utilities | 3 | H | ✅ | S/M |
 | Phase 3: Infrastructure | 5 | H | ✅ | M |
-| Phase 4: Core | 4 | H | ⏳ | M |
-| Phase 5: CLI | 7 | H | ⏳ | S |
+| Phase 4: Core | 4 | H | ✅ | M |
+| Phase 5: CLI | 7 | H | 🔄 | S |
 | Phase 6: Config & Docs | 2 | M | ⏳ | XS/M |
 | Phase 7: Testing | 6 | H | ⏳ | M |
 | Phase 8: Validation | 3 | M/H | ⏳ | L/M |
-| **Total** | **33** | - | **15/33** | - |
+| **Total** | **33** | - | **20/33** | - |
 
 **Estimated Total Duration:** 17-25 days
 **Time Elapsed:** ~3 days
-**Tasks Completed:** 15/33 (45%)
-**Current Phase:** Phase 3 🔄 (In Progress - Tasks 7-8 Complete)
+**Tasks Completed:** 20/33 (61%)
+**Current Phase:** Phase 5 🔄 (In Progress - Task 16 Complete, Tasks 17-22 Pending)
 
 ---
 
@@ -463,13 +469,14 @@ Validation (31-33)
    - Build succeeds with 0 errors
    - Tests pass (4/4)
 
-5. **Proceed to Phase 4: Core** (Tasks 12-15)
-   - Services, Exporters, Importers, Orchestrator
-   
-  **Recommended:** Continue with Task 12 (Implement Shared Services)
+5. **✅ Phase 4: Core** (Tasks 12-15) - **COMPLETED**
+   - Shared services, data exporters, data importers, migration orchestrator
+   - All acceptance criteria met
+   - Build succeeds
 
-6. **Continue with Phase 5: CLI** (Tasks 16-22)
-   - CLI infrastructure and all commands
+6. **🔄 Phase 5: CLI** (Tasks 16-22) - **IN PROGRESS**
+   - CLI infrastructure implemented (Task 16)
+   - **Recommended:** Continue with Task 17 (Implement Setup Command)
 
 7. **Parallel: Start Testing** (Tasks 25-30)
    - Each test task can start after its dependency completes
@@ -482,9 +489,9 @@ Validation (31-33)
 
 ---
 
-*Last Updated: 2026-07-01*
-*Plan Version: 1.1*
-*Status: Phase 2 Complete - Ready for Phase 3*
+*Last Updated: 2026-07-02*
+*Plan Version: 1.3*
+*Status: Phase 4 Complete, Phase 5 In Progress - Task 16 Complete*
 
 ## Files Created in Phase 1
 - `StalwartMigration.slnx` - Solution file (XML format)
@@ -554,6 +561,36 @@ Validation (31-33)
 - `src/StalwartMigration/Infrastructure/Vandelay/VandelayResult.cs` - Structured results
 - `src/StalwartMigration/Infrastructure/FileSystem/ArchiveManager.cs` - ZIP archive operations
 - `src/StalwartMigration/Infrastructure/FileSystem/ArchiveManagerException.cs` - Archive-specific errors
+
+## Files Created in Phase 4
+- `src/StalwartMigration/Core/Services/CompressionService.cs` - ZIP compression/decompression service
+- `src/StalwartMigration/Core/Services/CheckpointService.cs` - Resumable migration checkpoint service
+- `src/StalwartMigration/Core/Services/ValidationService.cs` - Data integrity validation service
+- `src/StalwartMigration/Core/Services/ICompressionService.cs` - Compression service interface
+- `src/StalwartMigration/Core/Services/ICheckpointService.cs` - Checkpoint service interface
+- `src/StalwartMigration/Core/Services/IValidationService.cs` - Validation service interface
+- `src/StalwartMigration/Core/Exporters/ExporterBase.cs` - Base exporter class
+- `src/StalwartMigration/Core/Exporters/HMailServerExporter.cs` - hMailServer data export implementation
+- `src/StalwartMigration/Core/Exporters/IExporter.cs` - Exporter interface
+- `src/StalwartMigration/Core/Exporters/ExportResult.cs` - Export result DTO
+- `src/StalwartMigration/Core/Importers/ImporterBase.cs` - Base importer class
+- `src/StalwartMigration/Core/Importers/StalwartImporter.cs` - Stalwart data import implementation
+- `src/StalwartMigration/Core/Importers/IImporter.cs` - Importer interface
+- `src/StalwartMigration/Core/Importers/ImportResult.cs` - Import result DTO
+- `src/StalwartMigration/Core/MigrationOrchestrator.cs` - Main migration workflow coordinator
+- `src/StalwartMigration/Core/IMigrationOrchestrator.cs` - Migration orchestrator interface
+- `src/StalwartMigration/Core/MigrationOptions.cs` - Migration configuration options
+- `src/StalwartMigration/Core/MigrationResult.cs` - Migration result DTO
+
+## Files Created in Phase 5
+- `src/StalwartMigration/CLI/Program.cs` - CLI entry point with System.CommandLine
+- `src/StalwartMigration/CLI/Commands/CommandBase.cs` - Abstract base class for command handlers
+- `src/StalwartMigration/CLI/Commands/SetupCommandHandler.cs` - Setup command handler
+- `src/StalwartMigration/CLI/Commands/MigrateCommandHandler.cs` - Migrate command handler
+- `src/StalwartMigration/CLI/Commands/VandelayCommandHandler.cs` - Vandelay command handler
+- `src/StalwartMigration/CLI/Commands/ExportCommandHandler.cs` - Export command handler
+- `src/StalwartMigration/CLI/Commands/ImportCommandHandler.cs` - Import command handler
+- `src/StalwartMigration/CLI/Commands/ValidateCommandHandler.cs` - Validate command handler
 
 **Repository:** https://github.com/frederik256/stalwart_mi_mistral
 
