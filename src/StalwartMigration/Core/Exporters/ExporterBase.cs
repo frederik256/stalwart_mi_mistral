@@ -58,7 +58,7 @@ public abstract class ExporterBase : IExporter
     }
 
     /// <summary>Disposes resources.</summary>
-    public void Dispose()
+    public virtual void Dispose()
     {
         if (_disposed) return;
         _disposed = true;
