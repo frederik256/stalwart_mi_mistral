@@ -16,9 +16,9 @@
     <PackageReference Include="MSTest.TestFramework" Version="3.0.1" />
   </ItemGroup>
 
-  <!-- Project reference (temporarily commented out to avoid BouncyCastle issue) -->
-  <!-- <ItemGroup>
+  <!-- Project reference -->
+  <ItemGroup>
     <ProjectReference Include="..\..\src\StalwartMigration\StalwartMigration.csproj" />
-  </ItemGroup> -->
+  </ItemGroup>
 
 </Project>
