@@ -15,7 +15,7 @@ namespace StalwartMigration.Infrastructure.HMailServer;
 /// This is the primary method for extracting data from hMailServer.
 /// Falls back to database access if COM API is unavailable.
 /// </summary>
-public class HMailServerClient : IDisposable
+public class HMailServerClient : IHMailServerClient
 {
     private readonly HMailServerDatabase? _databaseFallback;
     private readonly ILogger<HMailServerClient> _logger;
