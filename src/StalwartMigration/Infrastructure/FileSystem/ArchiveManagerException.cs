@@ -6,6 +6,8 @@ using System.Runtime.Serialization;
 
 namespace StalwartMigration.Infrastructure.FileSystem;
 
+#pragma warning disable SYSLIB0051 // Suppress Serializable exception constructor warning
+
 /// <summary>
 /// Exception thrown when there is an error with archive operations.
 /// </summary>

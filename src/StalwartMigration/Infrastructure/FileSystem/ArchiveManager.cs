@@ -104,7 +104,7 @@ public class ArchiveManager : IDisposable
         {
             throw ArchiveManagerException.ForInvalidArchive(archivePath);
         }
-        catch (UnauthorizedAccessException ex)
+        catch (UnauthorizedAccessException)
         {
             throw ArchiveManagerException.ForPermissionDenied(archivePath);
         }
