@@ -13,7 +13,13 @@ namespace StalwartMigration.Core.Models;
 public class EmailMessage : IValidatableObject
 {
     /// <summary>
-    /// Gets or sets the unique message identifier.
+    /// Gets or sets the database/IMAP ID for this message.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
+
+    /// <summary>
+    /// Gets or sets the unique message identifier (Message-ID header).
     /// </summary>
     [JsonPropertyName("messageId")]
     [Required(ErrorMessage = "Message ID is required.")]
@@ -178,6 +184,18 @@ public class EmailMessage : IValidatableObject
     /// </summary>
     [JsonIgnore]
     public bool HasAttachments => Attachments.Count > 0;
+
+    /// <summary>
+    /// Gets or sets whether this email has attachments (from hMailServer).
+    /// </summary>
+    [JsonPropertyName("hasAttachment")]
+    public bool HasAttachment { get; set; }
+
+    /// <summary>
+    /// Gets or sets the flags for this message (from hMailServer).
+    /// </summary>
+    [JsonPropertyName("flags")]
+    public int Flags { get; set; }
 
     /// <summary>
     /// Gets the total number of recipients (To + Cc + Bcc).
