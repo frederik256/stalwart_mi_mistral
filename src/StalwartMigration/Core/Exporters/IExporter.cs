@@ -3,6 +3,8 @@
 // </copyright>
 
 using StalwartMigration.Core.Models;
+using StalwartMigration.Core.Models.Progress;
+using StalwartMigration.Infrastructure.HMailServer;
 
 namespace StalwartMigration.Core.Exporters;
 

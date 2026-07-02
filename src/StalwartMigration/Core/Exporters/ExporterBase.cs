@@ -5,6 +5,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using StalwartMigration.Core.Models;
+using StalwartMigration.Core.Models.Progress;
 using StalwartMigration.Infrastructure.HMailServer;
 
 namespace StalwartMigration.Core.Exporters;
@@ -29,8 +30,8 @@ public abstract class ExporterBase : IExporter
         Client = client ?? throw new ArgumentNullException(nameof(client));
         _logger = logger ?? NullLogger<ExporterBase>.Instance;
         Progress = new Progress<ProgressReport>(report =>
-            _logger.LogInformation("Progress: {Current}/{Total} ({Percentage}%) - {Message}",
-                report.Current, report.Total, report.Percentage, report.Message));
+            _logger.LogInformation("Progress: {Current}/{Total} ({ProgressPercentage}%) - {Description}",
+                report.Current, report.Total, report.ProgressPercentage, report.Description));
     }
 
     /// <summary>Exports a single domain.</summary>
