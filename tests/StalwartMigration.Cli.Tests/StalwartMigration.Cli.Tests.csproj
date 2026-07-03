@@ -14,11 +14,16 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="3.0.1" />
     <PackageReference Include="MSTest.TestFramework" Version="3.0.1" />
+    
+    <!-- Logging -->
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
   </ItemGroup>
 
-  <!-- Project reference (temporarily commented out to avoid BouncyCastle issue) -->
-  <!-- <ItemGroup>
+  <!-- Project reference -->
+  <ItemGroup>
     <ProjectReference Include="..\..\src\StalwartMigration\StalwartMigration.csproj" />
-  </ItemGroup> -->
+  </ItemGroup>
 
 </Project>

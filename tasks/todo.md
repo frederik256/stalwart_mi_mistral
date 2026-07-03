@@ -187,7 +187,7 @@ Total: 4 tasks | Status: ✅ Completed
 ---
 
 ## Phase 5: CLI Layer (Priority: H)
-Total: 7 tasks | Status: 🔄 In Progress (1/7 complete)
+Total: 7 tasks | Status: 🔄 In Progress (2/7 complete)
 
 - [x] **Task 16**: Implement CLI Infrastructure
   - Status: ✅ Completed
@@ -198,7 +198,13 @@ Total: 7 tasks | Status: 🔄 In Progress (1/7 complete)
   - **Completed**: 2026-07-02
   - **Note**: Implemented with command handlers pattern
 
-- [ ] **Task 17**: Implement Setup Command
+- [x] **Task 17**: Implement Setup Command
+  - Status: ✅ Completed
+  - Priority: H
+  - Dependencies: Task 16
+  - Size: Small (1 file)
+  - Files: CLI/Commands/SetupCommand.cs
+  - **Completed**: 2026-07-02
   - Status: ⏳
   - Priority: H
   - Dependencies: Task 16
@@ -356,12 +362,12 @@ Total: 3 tasks | Status: ⏳ Pending
 | Phase 6: Config & Docs | 2 | M | ⏳ | XS/M |
 | Phase 7: Testing | 6 | H | ⏳ | M |
 | Phase 8: Validation | 3 | M/H | ⏳ | L/M |
-| **Total** | **33** | - | **20/33** | - |
+| **Total** | **33** | - | **21/33** | - |
 
 **Estimated Total Duration:** 17-25 days
 **Time Elapsed:** ~3 days
-**Tasks Completed:** 20/33 (61%)
-**Current Phase:** Phase 5 🔄 (In Progress - Task 16 Complete, Tasks 17-22 Pending)
+**Tasks Completed:** 21/33 (64%)
+**Current Phase:** Phase 5 🔄 (In Progress - Tasks 16-17 Complete, Tasks 18-22 Pending)
 
 ---
 
@@ -476,7 +482,8 @@ Validation (31-33)
 
 6. **🔄 Phase 5: CLI** (Tasks 16-22) - **IN PROGRESS**
    - CLI infrastructure implemented (Task 16)
-   - **Recommended:** Continue with Task 17 (Implement Setup Command)
+   - Setup command implemented (Task 17)
+   - **Recommended:** Continue with Task 18 (Implement Migrate Command)
 
 7. **Parallel: Start Testing** (Tasks 25-30)
    - Each test task can start after its dependency completes

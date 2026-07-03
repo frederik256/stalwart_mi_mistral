@@ -743,28 +743,31 @@ Documentation (Can be parallel)
 **Description**: Create the `setup` command for creating domains, accounts, and aliases in Stalwart (fills Vandelay's gap).
 
 **Acceptance criteria:**
-- [ ] `SetupCommand` class
-- [ ] Options: --source, --target, --source-config, --target-config
-- [ ] Flags: --create-domains, --create-accounts, --migrate-aliases
-- [ ] Per-domain setup support: --domain
-- [ ] Connects to hMailServer and extracts domain information
-- [ ] Creates domains in Stalwart
-- [ ] Creates accounts in Stalwart
-- [ ] Migrates email aliases
-- [ ] Progress reporting
-- [ ] Checkpoint support
+- [x] `SetupCommand` class
+- [x] Options: --source, --target, --source-config, --target-config
+- [x] Flags: --create-domains, --create-accounts, --migrate-aliases
+- [x] Per-domain setup support: --domain
+- [x] Connects to hMailServer and extracts domain information
+- [x] Creates domains in Stalwart
+- [x] Creates accounts in Stalwart
+- [x] Migrates email aliases
+- [x] Progress reporting
+- [x] Checkpoint support
 
 **Verification:**
-- [ ] `stalwart-migrate setup --help` shows command help
-- [ ] Unit tests for command
-- [ ] Build succeeds
+- [x] `stalwart-migrate setup --help` shows command help
+- [x] Unit tests for command
+- [x] Build succeeds
 
 **Dependencies:** Task 16
 
 **Files likely touched:**
 - `CLI/Commands/SetupCommand.cs`
+- `CLI/Program.cs` (updated to use SetupCommand)
+- `CLI/Commands/SetupCommandHandler.cs` (existing, used by SetupCommand)
 
 **Estimated scope:** Small (1 file)
+**Completed:** 2026-07-02
 
 ---
 

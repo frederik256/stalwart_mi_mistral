@@ -45,14 +45,11 @@ public static class Program
             .UseEnvironmentVariableDirective()
             .Build();
 
-        // Parse arguments
-        var parseResult = parser.Parse(args);
-
         _logger.LogInformation("Stalwart Migration Tool starting...");
 
         try
         {
-            return await ExecuteCommandAsync(parseResult);
+            return await parser.InvokeAsync(args);
         }
         catch (Exception ex)
         {
@@ -76,7 +73,12 @@ public static class Program
             Description = "Migrate from hMailServer to Stalwart Mail Server with support for accounts, domains, aliases, and messages."
         };
 
-        rootCommand.AddCommand(CreateSetupCommand());
+        // Use the new SetupCommand class
+        var setupCommand = new Commands.SetupCommand();
+        setupCommand.SetHandler((context) => new Commands.SetupCommandHandler(_serviceProvider!).ExecuteAsync(context.ParseResult));
+        rootCommand.AddCommand(setupCommand);
+
+        // Keep other commands using the existing Create methods for now
         rootCommand.AddCommand(CreateMigrateCommand());
         rootCommand.AddCommand(CreateVandelayCommand());
         rootCommand.AddCommand(CreateExportCommand());
@@ -84,29 +86,6 @@ public static class Program
         rootCommand.AddCommand(CreateValidateCommand());
 
         return rootCommand;
-    }
-
-    /// <summary>
-    /// Creates the setup command.
-    /// </summary>
-    private static Command CreateSetupCommand()
-    {
-        var command = new Command("setup", "Setup domains, accounts, and aliases in Stalwart")
-        {
-            Description = "Creates the domain, account, and alias infrastructure in Stalwart Mail Server."
-        };
-
-        command.AddOption(new Option<string?>("--hmailserver", "hMailServer server address") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string?>("--hmail-password", "hMailServer administrator password") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string?>("--stalwart-url", "Stalwart API base URL") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string?>("--stalwart-username", "Stalwart API username") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string?>("--stalwart-password", "Stalwart API password") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string[]>("--domain", "Specific domain(s) to setup") { Arity = ArgumentArity.ZeroOrMore });
-        command.AddOption(new Option<bool>("--dry-run", "Perform a dry run without making changes") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string?>("--output", "Output directory for logs and reports") { Arity = ArgumentArity.ZeroOrOne });
-
-        command.SetHandler((context) => new Commands.SetupCommandHandler(_serviceProvider!).ExecuteAsync(context.ParseResult));
-        return command;
     }
 
     /// <summary>
@@ -219,43 +198,11 @@ public static class Program
 
         services.AddLogging(configure => configure.AddConsole());
 
-        services.AddTransient<Commands.CommandBase>();
-        services.AddTransient<Commands.SetupCommandHandler>();
-        services.AddTransient<Commands.MigrateCommandHandler>();
-        services.AddTransient<Commands.VandelayCommandHandler>();
-        services.AddTransient<Commands.ExportCommandHandler>();
-        services.AddTransient<Commands.ImportCommandHandler>();
-        services.AddTransient<Commands.ValidateCommandHandler>();
+        // Note: Command handlers are instantiated directly in SetHandler callbacks
+        // and passed the service provider, so they don't need to be registered here.
+        // CommandBase is abstract and cannot be instantiated.
 
         return services.BuildServiceProvider();
-    }
-
-    /// <summary>
-    /// Executes the parsed command.
-    /// </summary>
-    private static async Task<int> ExecuteCommandAsync(ParseResult parseResult)
-    {
-        var commandName = parseResult.CommandResult.Command.Name;
-        _logger!.LogDebug("Executing command: {CommandName}", commandName);
-
-        CommandBase? commandHandler = commandName switch
-        {
-            "setup" => _serviceProvider!.GetRequiredService<Commands.SetupCommandHandler>(),
-            "migrate" => _serviceProvider!.GetRequiredService<Commands.MigrateCommandHandler>(),
-            "vandelay" => _serviceProvider!.GetRequiredService<Commands.VandelayCommandHandler>(),
-            "export" => _serviceProvider!.GetRequiredService<Commands.ExportCommandHandler>(),
-            "import" => _serviceProvider!.GetRequiredService<Commands.ImportCommandHandler>(),
-            "validate" => _serviceProvider!.GetRequiredService<Commands.ValidateCommandHandler>(),
-            _ => null
-        };
-
-        if (commandHandler == null)
-        {
-            _logger.LogError("Unknown command: {CommandName}", commandName);
-            return 1;
-        }
-
-        return await commandHandler.ExecuteAsync(parseResult);
     }
 
     // Wrapper class for logging (since Program is static)
