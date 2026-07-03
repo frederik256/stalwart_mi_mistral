@@ -82,8 +82,16 @@ public static class Program
         migrateCommand.SetHandler((context) => new Commands.MigrateCommandHandler(_serviceProvider!).ExecuteAsync(context.ParseResult));
         rootCommand.AddCommand(migrateCommand);
 
+        var vandelayCommand = new Commands.VandelayCommand();
+        // Note: VandelayCommand has subcommands, so we set handlers for each subcommand
+        // For now, we'll use the VandelayCommandHandler for all subcommands
+        foreach (var subCommand in vandelayCommand.Children.OfType<Command>())
+        {
+            subCommand.SetHandler((context) => new Commands.VandelayCommandHandler(_serviceProvider!).ExecuteAsync(context.ParseResult));
+        }
+        rootCommand.AddCommand(vandelayCommand);
+
         // Keep other commands using the existing Create methods for now
-        rootCommand.AddCommand(CreateVandelayCommand());
         rootCommand.AddCommand(CreateExportCommand());
         rootCommand.AddCommand(CreateImportCommand());
         rootCommand.AddCommand(CreateValidateCommand());

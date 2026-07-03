@@ -804,26 +804,29 @@ Documentation (Can be parallel)
 **Description**: Create the `vandelay` subcommand for Vandelay-specific operations.
 
 **Acceptance criteria:**
-- [ ] `VandelayCommand` class with subcommands
-- [ ] Subcommand: install - validate/install Vandelay
-- [ ] Subcommand: check - check Vandelay installation
-- [ ] Subcommand: run-import - run Vandelay import only
-- [ ] Subcommand: run-export - run Vandelay export only
-- [ ] Each subcommand has proper help text
-- [ ] Error handling for Vandelay process
+- [x] `VandelayCommand` class with subcommands
+- [x] Subcommand: install - validate/install Vandelay
+- [x] Subcommand: check - check Vandelay installation
+- [x] Subcommand: run-import - run Vandelay import only
+- [x] Subcommand: run-export - run Vandelay export only
+- [x] Each subcommand has proper help text
+- [x] Error handling for Vandelay process
 
 **Verification:**
-- [ ] `stalwart-migrate vandelay --help` shows command help
-- [ ] `stalwart-migrate vandelay install --help` works
-- [ ] Unit tests for all subcommands
-- [ ] Build succeeds
+- [x] `stalwart-migrate vandelay --help` shows command help
+- [x] `stalwart-migrate vandelay install --help` works
+- [x] Unit tests for all subcommands
+- [x] Build succeeds
 
 **Dependencies:** Task 16
 
 **Files likely touched:**
 - `CLI/Commands/VandelayCommand.cs`
+- `CLI/Program.cs` (updated to use VandelayCommand)
+- `CLI/Commands/VandelayCommandHandler.cs` (existing, used by VandelayCommand)
 
 **Estimated scope:** Small (1 file)
+**Completed:** 2026-07-02
 
 ---
 
