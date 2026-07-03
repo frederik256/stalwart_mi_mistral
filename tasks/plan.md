@@ -48,10 +48,10 @@ Build a standalone CLI migration tool that enables users to migrate from hMailSe
 - **Status**: Complete - All acceptance criteria met, build succeeds
 - **Files Created**: 15 files
 
-### Phase 5: CLI Layer (In Progress 🔄)
-- Task 16: CLI Infrastructure
-- **Status**: Complete - CLI infrastructure with command handlers implemented
-- **Files Created**: 8 files (Program.cs + 7 command handlers)
+### Phase 5: CLI Layer (Completed ✅)
+- Tasks 16-22: CLI Infrastructure and all 6 commands (Setup, Migrate, Vandelay, Export, Import, Validate)
+- **Status**: Complete - All CLI commands implemented with proper options
+- **Files Created**: 14 files (Program.cs, 7 Command classes, 7 CommandHandler classes)
 
 ## Dependency Graph
 
@@ -708,7 +708,7 @@ Documentation (Can be parallel)
 
 ---
 
-### Phase 5: CLI Layer
+### Phase 5: CLI Layer (Completed ✅)
 
 #### Task 16: Implement CLI Infrastructure
 **Description**: Set up the CLI application infrastructure using System.CommandLine.
@@ -890,26 +890,29 @@ Documentation (Can be parallel)
 **Description**: Create the `validate` command for migration validation.
 
 **Acceptance criteria:**
-- [ ] `ValidateCommand` class
-- [ ] Options: --source, --target, --source-config, --target-config
-- [ ] Validates domain counts match
-- [ ] Validates account counts match
-- [ ] Validates alias counts match
-- [ ] Performs data integrity checks
-- [ ] Generates validation report
-- [ ] --validate-target flag for API connectivity test
+- [x] `ValidateCommand` class
+- [x] Options: --source, --target, --source-config, --target-config
+- [x] Validates domain counts match
+- [x] Validates account counts match
+- [x] Validates alias counts match
+- [x] Performs data integrity checks
+- [x] Generates validation report
+- [x] --validate-target flag for API connectivity test
 
 **Verification:**
-- [ ] `stalwart-migrate validate --help` shows command help
-- [ ] Unit tests for command
-- [ ] Build succeeds
+- [x] `stalwart-migrate validate --help` shows command help
+- [x] Unit tests for command
+- [x] Build succeeds
 
 **Dependencies:** Task 16
 
 **Files likely touched:**
 - `CLI/Commands/ValidateCommand.cs`
+- `CLI/Program.cs` (updated to use ValidateCommand, removed old Create*Command methods)
+- `CLI/Commands/ValidateCommandHandler.cs` (existing, used by ValidateCommand)
 
 **Estimated scope:** Small (1 file)
+**Completed:** 2026-07-02
 
 ---
 

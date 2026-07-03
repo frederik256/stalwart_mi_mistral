@@ -101,111 +101,12 @@ public static class Program
         importCommand.SetHandler((context) => new Commands.ImportCommandHandler(_serviceProvider!).ExecuteAsync(context.ParseResult));
         rootCommand.AddCommand(importCommand);
 
-        // Keep other commands using the existing Create methods for now
-        rootCommand.AddCommand(CreateValidateCommand());
+        // Use the new ValidateCommand class
+        var validateCommand = new Commands.ValidateCommand();
+        validateCommand.SetHandler((context) => new Commands.ValidateCommandHandler(_serviceProvider!).ExecuteAsync(context.ParseResult));
+        rootCommand.AddCommand(validateCommand);
 
         return rootCommand;
-    }
-
-    /// <summary>
-    /// Creates the migrate command.
-    /// </summary>
-    private static Command CreateMigrateCommand()
-    {
-        var command = new Command("migrate", "Run full migration from hMailServer to Stalwart")
-        {
-            Description = "Performs the complete migration including setup and message migration."
-        };
-
-        command.AddOption(new Option<string?>("--hmailserver", "hMailServer server address") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string?>("--hmail-password", "hMailServer administrator password") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string?>("--stalwart-url", "Stalwart API base URL") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string?>("--stalwart-username", "Stalwart API username") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string?>("--stalwart-password", "Stalwart API password") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<bool>("--use-vandelay", "Use Vandelay for message migration") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<bool>("--skip-messages", "Skip message migration") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<bool>("--skip-validation", "Skip validation phase") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string[]>("--domain", "Specific domain(s) to migrate") { Arity = ArgumentArity.ZeroOrMore });
-
-        command.SetHandler((context) => new Commands.MigrateCommandHandler(_serviceProvider!).ExecuteAsync(context.ParseResult));
-        return command;
-    }
-
-    /// <summary>
-    /// Creates the vandelay command.
-    /// </summary>
-    private static Command CreateVandelayCommand()
-    {
-        var command = new Command("vandelay", "Run Vandelay for message migration")
-        {
-            Description = "Executes Vandelay to migrate messages from hMailServer to Stalwart."
-        };
-
-        command.AddOption(new Option<string?>("--domain", "Specific domain to migrate") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string?>("--config", "Path to Vandelay configuration file") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<bool>("--validate", "Validate Vandelay installation") { Arity = ArgumentArity.ZeroOrOne });
-
-        command.SetHandler((context) => new Commands.VandelayCommandHandler(_serviceProvider!).ExecuteAsync(context.ParseResult));
-        return command;
-    }
-
-    /// <summary>
-    /// Creates the export command.
-    /// </summary>
-    private static Command CreateExportCommand()
-    {
-        var command = new Command("export", "Export data from hMailServer (fallback)")
-        {
-            Description = "Exports data from hMailServer to JSON and EML format."
-        };
-
-        command.AddOption(new Option<string?>("--hmailserver", "hMailServer server address") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string?>("--hmail-password", "hMailServer administrator password") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string?>("--output", "Output directory for exported files") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string[]>("--domain", "Specific domain(s) to export") { Arity = ArgumentArity.ZeroOrMore });
-
-        command.SetHandler((context) => new Commands.ExportCommandHandler(_serviceProvider!).ExecuteAsync(context.ParseResult));
-        return command;
-    }
-
-    /// <summary>
-    /// Creates the import command.
-    /// </summary>
-    private static Command CreateImportCommand()
-    {
-        var command = new Command("import", "Import data into Stalwart (fallback)")
-        {
-            Description = "Imports data into Stalwart from JSON and EML files."
-        };
-
-        command.AddOption(new Option<string?>("--stalwart-url", "Stalwart API base URL") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string?>("--stalwart-username", "Stalwart API username") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string?>("--stalwart-password", "Stalwart API password") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string?>("--input", "Input directory for import files") { Arity = ArgumentArity.ZeroOrOne });
-
-        command.SetHandler((context) => new Commands.ImportCommandHandler(_serviceProvider!).ExecuteAsync(context.ParseResult));
-        return command;
-    }
-
-    /// <summary>
-    /// Creates the validate command.
-    /// </summary>
-    private static Command CreateValidateCommand()
-    {
-        var command = new Command("validate", "Validate migration results")
-        {
-            Description = "Validates that all data was migrated correctly from hMailServer to Stalwart."
-        };
-
-        command.AddOption(new Option<string?>("--hmailserver", "hMailServer server address") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string?>("--hmail-password", "hMailServer administrator password") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string?>("--stalwart-url", "Stalwart API base URL") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string?>("--stalwart-username", "Stalwart API username") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string?>("--stalwart-password", "Stalwart API password") { Arity = ArgumentArity.ZeroOrOne });
-        command.AddOption(new Option<string[]>("--domain", "Specific domain(s) to validate") { Arity = ArgumentArity.ZeroOrMore });
-
-        command.SetHandler((context) => new Commands.ValidateCommandHandler(_serviceProvider!).ExecuteAsync(context.ParseResult));
-        return command;
     }
 
     /// <summary>
