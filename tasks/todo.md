@@ -230,12 +230,13 @@ Total: 7 tasks | Status: 🔄 In Progress (2/7 complete)
   - Files: CLI/Commands/ExportCommand.cs
   - **Completed**: 2026-07-02
 
-- [ ] **Task 21**: Implement Import Command (Fallback)
-  - Status: ⏳
+- [x] **Task 21**: Implement Import Command (Fallback)
+  - Status: ✅ Completed
   - Priority: M
   - Dependencies: Task 16
   - Size: Small (1 file)
   - Files: CLI/Commands/ImportCommand.cs
+  - **Completed**: 2026-07-02
 
 - [ ] **Task 22**: Implement Validate Command
   - Status: ⏳
@@ -360,12 +361,12 @@ Total: 3 tasks | Status: ⏳ Pending
 | Phase 6: Config & Docs | 2 | M | ⏳ | XS/M |
 | Phase 7: Testing | 6 | H | ⏳ | M |
 | Phase 8: Validation | 3 | M/H | ⏳ | L/M |
-| **Total** | **33** | - | **24/33** | - |
+| **Total** | **33** | - | **25/33** | - |
 
 **Estimated Total Duration:** 17-25 days
 **Time Elapsed:** ~3 days
-**Tasks Completed:** 24/33 (73%)
-**Current Phase:** Phase 5 🔄 (In Progress - Tasks 16-20 Complete, Tasks 21-22 Pending)
+**Tasks Completed:** 25/33 (76%)
+**Current Phase:** Phase 5 🔄 (In Progress - Tasks 16-21 Complete, Task 22 Pending)
 
 ---
 
@@ -484,7 +485,8 @@ Validation (31-33)
    - Migrate command implemented (Task 18)
    - Vandelay command implemented (Task 19)
    - Export command implemented (Task 20)
-   - **Recommended:** Continue with Task 21 (Implement Import Command)
+   - Import command implemented (Task 21)
+   - **Recommended:** Continue with Task 22 (Implement Validate Command)
 
 7. **Parallel: Start Testing** (Tasks 25-30)
    - Each test task can start after its dependency completes

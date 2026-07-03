@@ -96,8 +96,12 @@ public static class Program
         exportCommand.SetHandler((context) => new Commands.ExportCommandHandler(_serviceProvider!).ExecuteAsync(context.ParseResult));
         rootCommand.AddCommand(exportCommand);
 
+        // Use the new ImportCommand class
+        var importCommand = new Commands.ImportCommand();
+        importCommand.SetHandler((context) => new Commands.ImportCommandHandler(_serviceProvider!).ExecuteAsync(context.ParseResult));
+        rootCommand.AddCommand(importCommand);
+
         // Keep other commands using the existing Create methods for now
-        rootCommand.AddCommand(CreateImportCommand());
         rootCommand.AddCommand(CreateValidateCommand());
 
         return rootCommand;

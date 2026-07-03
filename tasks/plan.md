@@ -862,24 +862,27 @@ Documentation (Can be parallel)
 **Description**: Create the `import` command for legacy fallback when Vandelay is unavailable.
 
 **Acceptance criteria:**
-- [ ] `ImportCommand` class
-- [ ] Options: --target, --config, --input
-- [ ] Imports from ZIP archives to Stalwart
-- [ ] Progress reporting
-- [ ] Checkpoint support
-- [ ] Validation after import
+- [x] `ImportCommand` class
+- [x] Options: --target, --config, --input
+- [x] Imports from ZIP archives to Stalwart
+- [x] Progress reporting
+- [x] Checkpoint support
+- [x] Validation after import
 
 **Verification:**
-- [ ] `stalwart-migrate import --help` shows command help
-- [ ] Unit tests for command
-- [ ] Build succeeds
+- [x] `stalwart-migrate import --help` shows command help
+- [x] Unit tests for command
+- [x] Build succeeds
 
 **Dependencies:** Task 16
 
 **Files likely touched:**
 - `CLI/Commands/ImportCommand.cs`
+- `CLI/Program.cs` (updated to use ImportCommand)
+- `CLI/Commands/ImportCommandHandler.cs` (existing, used by ImportCommand)
 
 **Estimated scope:** Small (1 file)
+**Completed:** 2026-07-02
 
 ---
 
