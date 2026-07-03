@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/frederik256/stalwart_mi_mistral/main/configs/hmailserver-config.schema.json",
+  "description": "hMailServer configuration for Stalwart Migration Tool",
+  "version": "1.0",
+  "host": "localhost",
+  "port": 5000,
+  "username": "Administrator",
+  "password": "your-hmailserver-password",
+  "useComApi": true,
+  "databaseConnectionString": "Server=localhost;Database=hmailserver;User Id=sa;Password=your-database-password;",
+  "sslEnabled": false,
+  "timeoutSeconds": 30,
+  "maxConnections": 10
+}

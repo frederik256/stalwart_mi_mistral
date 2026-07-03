@@ -917,9 +917,9 @@ Documentation (Can be parallel)
 ---
 
 ### Checkpoint: CLI Layer Complete
-- [ ] All CLI commands compile
-- [ ] All commands show proper help text
-- [ ] CLI can be built and run
+- [x] All CLI commands compile
+- [x] All commands show proper help text
+- [x] CLI can be built and run
 - [ ] Review with human before proceeding to Testing phase
 
 ---
@@ -930,13 +930,13 @@ Documentation (Can be parallel)
 **Description**: Create the example configuration files as referenced in SPEC.md.
 
 **Acceptance criteria:**
-- [ ] `configs/hmailserver-config.example.json` with all required fields
-- [ ] `configs/stalwart-config.example.json` with all required fields
-- [ ] Configuration files are well-documented with comments
-- [ ] Example values are placeholders (not real credentials)
+- [x] `configs/hmailserver-config.example.json` with all required fields
+- [x] `configs/stalwart-config.example.json` with all required fields
+- [x] Configuration files are well-documented with comments
+- [x] Example values are placeholders (not real credentials)
 
 **Verification:**
-- [ ] Configuration files are valid JSON
+- [x] Configuration files are valid JSON
 - [ ] Configuration can be loaded by CLI
 
 **Dependencies:** Task 16
@@ -946,6 +946,7 @@ Documentation (Can be parallel)
 - `configs/stalwart-config.example.json`
 
 **Estimated scope:** XS (2 files)
+**Completed:** 2026-07-02
 
 ---
 

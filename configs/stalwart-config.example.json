@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/frederik256/stalwart_mi_mistral/main/configs/stalwart-config.schema.json",
+  "description": "Stalwart Mail Server configuration for Stalwart Migration Tool",
+  "version": "1.0",
+  "apiUrl": "http://localhost:8080",
+  "username": "admin",
+  "password": "your-stalwart-password",
+  "timeoutSeconds": 30,
+  "maxRetries": 3,
+  "retryDelayMilliseconds": 1000,
+  "sslEnabled": false,
+  "sslCertificateValidation": true,
+  "batchSize": 50,
+  "concurrentDomains": 1
+}
