@@ -775,25 +775,28 @@ Documentation (Can be parallel)
 **Description**: Create the `migrate` command for full migration workflow.
 
 **Acceptance criteria:**
-- [ ] `MigrateCommand` class
-- [ ] Options: --source, --target, --source-config, --target-config
-- [ ] Flags: --setup-first, --run-vandelay, --resume
-- [ ] Option: --last-checkpoint
-- [ ] Orchestrates full migration: setup + Vandelay + validation
-- [ ] Progress reporting
-- [ ] Checkpoint creation and resume
+- [x] `MigrateCommand` class
+- [x] Options: --source, --target, --source-config, --target-config
+- [x] Flags: --setup-first, --run-vandelay, --resume
+- [x] Option: --last-checkpoint
+- [x] Orchestrates full migration: setup + Vandelay + validation
+- [x] Progress reporting
+- [x] Checkpoint creation and resume
 
 **Verification:**
-- [ ] `stalwart-migrate migrate --help` shows command help
-- [ ] Unit tests for command
-- [ ] Build succeeds
+- [x] `stalwart-migrate migrate --help` shows command help
+- [x] Unit tests for command
+- [x] Build succeeds
 
 **Dependencies:** Task 16, Task 17
 
 **Files likely touched:**
 - `CLI/Commands/MigrateCommand.cs`
+- `CLI/Program.cs` (updated to use MigrateCommand)
+- `CLI/Commands/MigrateCommandHandler.cs` (existing, used by MigrateCommand)
 
 **Estimated scope:** Small (1 file)
+**Completed:** 2026-07-02
 
 ---
 

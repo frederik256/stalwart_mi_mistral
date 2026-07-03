@@ -73,13 +73,16 @@ public static class Program
             Description = "Migrate from hMailServer to Stalwart Mail Server with support for accounts, domains, aliases, and messages."
         };
 
-        // Use the new SetupCommand class
+        // Use the new Command classes
         var setupCommand = new Commands.SetupCommand();
         setupCommand.SetHandler((context) => new Commands.SetupCommandHandler(_serviceProvider!).ExecuteAsync(context.ParseResult));
         rootCommand.AddCommand(setupCommand);
 
+        var migrateCommand = new Commands.MigrateCommand();
+        migrateCommand.SetHandler((context) => new Commands.MigrateCommandHandler(_serviceProvider!).ExecuteAsync(context.ParseResult));
+        rootCommand.AddCommand(migrateCommand);
+
         // Keep other commands using the existing Create methods for now
-        rootCommand.AddCommand(CreateMigrateCommand());
         rootCommand.AddCommand(CreateVandelayCommand());
         rootCommand.AddCommand(CreateExportCommand());
         rootCommand.AddCommand(CreateImportCommand());
