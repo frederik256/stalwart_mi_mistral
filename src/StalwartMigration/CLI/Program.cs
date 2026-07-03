@@ -91,8 +91,12 @@ public static class Program
         }
         rootCommand.AddCommand(vandelayCommand);
 
+        // Use the new ExportCommand class
+        var exportCommand = new Commands.ExportCommand();
+        exportCommand.SetHandler((context) => new Commands.ExportCommandHandler(_serviceProvider!).ExecuteAsync(context.ParseResult));
+        rootCommand.AddCommand(exportCommand);
+
         // Keep other commands using the existing Create methods for now
-        rootCommand.AddCommand(CreateExportCommand());
         rootCommand.AddCommand(CreateImportCommand());
         rootCommand.AddCommand(CreateValidateCommand());
 

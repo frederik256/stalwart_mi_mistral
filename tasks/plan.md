@@ -834,24 +834,27 @@ Documentation (Can be parallel)
 **Description**: Create the `export` command for legacy fallback when Vandelay is unavailable.
 
 **Acceptance criteria:**
-- [ ] `ExportCommand` class
-- [ ] Options: --source, --config, --output, --domain
-- [ ] Exports from hMailServer to ZIP archives
-- [ ] Per-domain or full export
-- [ ] Progress reporting
-- [ ] Checkpoint support
+- [x] `ExportCommand` class
+- [x] Options: --source, --config, --output, --domain
+- [x] Exports from hMailServer to ZIP archives
+- [x] Per-domain or full export
+- [x] Progress reporting
+- [x] Checkpoint support
 
 **Verification:**
-- [ ] `stalwart-migrate export --help` shows command help
-- [ ] Unit tests for command
-- [ ] Build succeeds
+- [x] `stalwart-migrate export --help` shows command help
+- [x] Unit tests for command
+- [x] Build succeeds
 
 **Dependencies:** Task 16
 
 **Files likely touched:**
 - `CLI/Commands/ExportCommand.cs`
+- `CLI/Program.cs` (updated to use ExportCommand)
+- `CLI/Commands/ExportCommandHandler.cs` (existing, used by ExportCommand)
 
 **Estimated scope:** Small (1 file)
+**Completed:** 2026-07-02
 
 ---
 
