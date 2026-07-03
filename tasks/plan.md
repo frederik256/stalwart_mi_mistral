@@ -997,22 +997,23 @@ Documentation (Can be parallel)
 **Description**: Write comprehensive unit tests for the utility layer.
 
 **Acceptance criteria:**
-- [ ] Tests for all extension methods
-- [ ] Tests for all helper classes
-- [ ] Tests for logging configuration
-- [ ] Tests for custom exceptions
-- [ ] 100% coverage for utility layer
+- [x] Tests for all extension methods
+- [x] Tests for all helper classes
+- [x] Tests for logging configuration
+- [x] Tests for custom exceptions
+- [x] 100% coverage for utility layer
 
 **Verification:**
-- [ ] `dotnet test StalwartMigration.Tests` passes
-- [ ] Coverage report shows 100% for utilities
+- [x] `dotnet test StalwartMigration.Tests` passes
+- [x] Coverage report shows 100% for utilities
 
 **Dependencies:** Task 4-6
 
 **Files likely touched:**
-- `tests/StalwartMigration.Tests/Unit/UtilitiesTests/` (multiple files)
+- `tests/StalwartMigration.Tests/Unit/UtilitiesTests/UtilitiesTests.cs`
 
-**Estimated scope:** Medium (5-8 test files)
+**Estimated scope:** Medium (1 test file with 6 test classes)
+**Completed:** 2026-07-03
 
 ---
 
