@@ -977,7 +977,7 @@ public class HMailServerClient : IHMailServerClient
         try
         {
             if (sizeObj == null)
-                return null;
+                return 0;
 
             // Try to get as long first
             if (sizeObj is long l)
@@ -993,11 +993,13 @@ public class HMailServerClient : IHMailServerClient
                 return result;
             }
 
-            return null;
+            return 0;
         }
-        catch
+        catch (Exception ex)
         {
-            return null;
+            string sizeValue = sizeObj?.ToString() ?? "null";
+            _logger.LogWarning(ex, "Failed to convert size to bytes: {SizeValue}", sizeValue);
+            return 0;
         }
     }
 
