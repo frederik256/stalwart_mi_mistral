@@ -2,6 +2,7 @@
 // Copyright © Stalwart Labs 2024. All rights reserved.
 // </copyright>
 
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace StalwartMigration.Utilities.Helpers;
@@ -79,7 +80,8 @@ public static class DomainValidator
     }
 
     /// <summary>
-    /// Normalizes a domain name by trimming whitespace and converting to lowercase.
+    /// Normalizes a domain name by trimming whitespace, converting to lowercase,
+    /// and handling International Domain Names (IDN) with Punycode conversion.
     /// </summary>
     /// <param name="domain">The domain name to normalize.</param>
     /// <returns>The normalized domain name.</returns>
@@ -90,7 +92,19 @@ public static class DomainValidator
             return string.Empty;
         }
 
-        return domain.Trim().ToLowerInvariant();
+        domain = domain.Trim().ToLowerInvariant();
+        
+        // Handle International Domain Names (IDN) by converting to ASCII-compatible encoding (Punycode)
+        try
+        {
+            var idn = new IdnMapping();
+            return idn.GetAscii(domain);
+        }
+        catch
+        {
+            // If IDN conversion fails, return the lowercase domain as fallback
+            return domain;
+        }
     }
 
     /// <summary>
