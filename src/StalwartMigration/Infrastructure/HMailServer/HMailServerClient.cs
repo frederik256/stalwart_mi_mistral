@@ -1007,14 +1007,12 @@ public class HMailServerClient : IHMailServerClient
                     _application = null;
                 }
 
-                _databaseFallback?.Dispose();
-
                 _disposed = true;
                 _logger.LogDebug("Disposed HMailServerClient");
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Error while disposing HMailServerClient");
+                _logger.LogError(ex, "Error while disposing HMailServerClient");
             }
         }
     }
@@ -1024,6 +1022,23 @@ public class HMailServerClient : IHMailServerClient
     /// </summary>
     ~HMailServerClient()
     {
-        Dispose();
+        if (!_disposed)
+        {
+            try
+            {
+                if (_server != null)
+                {
+                    Marshal.FinalReleaseComObject(_server);
+                }
+                if (_application != null)
+                {
+                    Marshal.FinalReleaseComObject(_application);
+                }
+            }
+            catch
+            {
+                // Finalizer should not throw exceptions
+            }
+        }
     }
 }
