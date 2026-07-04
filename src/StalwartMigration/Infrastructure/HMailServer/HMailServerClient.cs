@@ -49,7 +49,7 @@ public class HMailServerClient : IHMailServerClient
     {
         _logger = logger ?? NullLogger<HMailServerClient>.Instance;
 
-        // Try to initialize COM API
+        // Initialize COM API
         try
         {
             InitializeComApi();
@@ -58,33 +58,16 @@ public class HMailServerClient : IHMailServerClient
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to initialize hMailServer COM API. Falling back to database access.");
-            IsComAvailable = false;
-        }
-
-        // Initialize database fallback if connection string provided
-        if (!string.IsNullOrWhiteSpace(databaseConnectionString))
-        {
-            try
-            {
-                _databaseFallback = new HMailServerDatabase(databaseConnectionString, databaseType, 
-                    NullLogger<HMailServerDatabase>.Instance);
-                _logger.LogInformation("hMailServer database fallback initialized");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to initialize hMailServer database fallback");
-            }
-        }
-
-        if (!IsComAvailable && _databaseFallback == null)
-        {
-            throw new HMailServerException("Neither COM API nor database fallback is available.")
+            _logger.LogError(ex, "Failed to initialize hMailServer COM API.");
+            throw new HMailServerException("Failed to initialize hMailServer COM API.", ex)
             {
                 FailedOperation = "Initialization",
-                Remediation = "Install hMailServer on this machine or provide a database connection string for fallback access."
+                Remediation = "Install hMailServer on this machine."
             };
         }
+
+        // Note: Database fallback removed per architecture decision
+        // Only COM API is used for hMailServer infrastructure access
     }
 
     /// <summary>
