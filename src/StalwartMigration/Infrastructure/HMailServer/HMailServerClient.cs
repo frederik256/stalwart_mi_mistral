@@ -115,6 +115,39 @@ public class HMailServerClient : IHMailServerClient
     }
 
     /// <summary>
+    /// Tests the COM API connection to ensure it's still active.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>True if the connection is healthy, false otherwise.</returns>
+    public async Task<bool> TestComConnectionAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (_server == null || _application == null)
+            {
+                _logger.LogWarning("COM API not initialized");
+                return false;
+            }
+
+            // Try to access a simple property to test the connection
+            var version = _server.Version?.ToString();
+            if (version != null)
+            {
+                _logger.LogDebug("COM connection health check passed");
+                return true;
+            }
+            
+            _logger.LogWarning("COM connection health check failed: unable to access Version property");
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "COM connection health check failed");
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Gets the hMailServer version from COM API.
     /// </summary>
     private string? GetVersionFromCom()

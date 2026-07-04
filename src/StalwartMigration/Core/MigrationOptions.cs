@@ -78,4 +78,14 @@ public class MigrationOptions
     /// Gets or sets a value indicating whether to skip validation.
     /// </summary>
     public bool SkipValidation { get; set; }
+
+    /// <summary>
+    /// Gets or sets the COM connection timeout in seconds.
+    /// </summary>
+    public int ComConnectionTimeoutSeconds { get; set; } = 5;
+
+    /// <summary>
+    /// Gets or sets the delay between iterations in milliseconds (for rate limiting).
+    /// </summary>
+    public int DelayBetweenIterationsMs { get; set; } = 100;
 }
