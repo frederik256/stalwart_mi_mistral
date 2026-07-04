@@ -154,6 +154,12 @@ public class MigrationOrchestrator : IMigrationOrchestrator
 
                     // Create checkpoint every 30 seconds or after each domain
                     await CreateCheckpointAsync(options, result, ct).ConfigureAwait(false);
+
+                    // Apply rate limiting delay if configured
+                    if (options.DelayBetweenIterationsMs > 0)
+                    {
+                        await Task.Delay(options.DelayBetweenIterationsMs, ct).ConfigureAwait(false);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -245,6 +251,12 @@ public class MigrationOrchestrator : IMigrationOrchestrator
                         else
                         {
                             _logger.LogWarning("Vandelay failed for domain {DomainName}: {Error}", domainName, vandelayResult.ErrorMessage);
+                        }
+
+                        // Apply rate limiting delay if configured
+                        if (options.DelayBetweenIterationsMs > 0)
+                        {
+                            await Task.Delay(options.DelayBetweenIterationsMs, ct).ConfigureAwait(false);
                         }
                     }
                 }
