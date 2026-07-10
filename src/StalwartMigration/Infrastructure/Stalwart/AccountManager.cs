@@ -505,6 +505,30 @@ public class AccountManager : IDisposable
         }
     }
 
+    /// <summary>
+    /// Gets the authenticated account's permissions, edition and locale.
+    /// Uses the Management API /api/account endpoint.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Account information.</returns>
+    public async Task<AccountInfoResponse> GetAccountInfoAsync(CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Getting account information");
+        return await _client.GetAccountInfoAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Discovers the OpenID Connect provider for an email address.
+    /// </summary>
+    /// <param name="email">The email address or account name.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>OIDC discovery document.</returns>
+    public async Task<Dictionary<string, object>> DiscoverOidcProviderAsync(string email, CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Discovering OIDC provider for {Email}", email);
+        return await _client.DiscoverOidcProviderAsync(email, cancellationToken).ConfigureAwait(false);
+    }
+
     // ========================================================================
     // Bulk Operations
     // ========================================================================
