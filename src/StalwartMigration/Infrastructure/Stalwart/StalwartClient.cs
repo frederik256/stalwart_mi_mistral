@@ -329,6 +329,133 @@ public class StalwartClient : IStalwartClient
     }
 
     // ========================================================================
+    // OpenAPI Management API Endpoints
+    // ========================================================================
+
+    /// <summary>
+    /// Discovers the OpenID Connect provider for an email address.
+    /// GET /api/discover/{email}
+    /// </summary>
+    /// <param name="email">The email address or account name.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>OIDC discovery document.</returns>
+    public async Task<Dictionary<string, object>> DiscoverOidcProviderAsync(string email, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            throw new ArgumentException("Email cannot be null or empty.", nameof(email));
+        var url = $"{BaseUrl}/api/discover/{Uri.EscapeDataString(email)}";
+        var response = await SendRequestInternalAsync<Dictionary<string, object>>(
+            HttpMethod.Get, url, null, false, cancellationToken).ConfigureAwait(false);
+        return response.Data ?? new Dictionary<string, object>();
+    }
+
+    /// <summary>
+    /// Gets the authenticated account's permissions, edition and locale.
+    /// GET /api/account
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Account information.</returns>
+    public async Task<AccountInfoResponse> GetAccountInfoAsync(CancellationToken cancellationToken = default)
+    {
+        var url = $"{BaseUrl}/api/account";
+        var response = await SendRequestAsync<AccountInfoResponse>(
+            HttpMethod.Get, url, null, true, cancellationToken).ConfigureAwait(false);
+        return response.Data ?? new AccountInfoResponse();
+    }
+
+    /// <summary>
+    /// Gets the configuration schema redirect.
+    /// GET /api/schema - Redirects to /api/schema/{hash}
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Schema hash redirect URL.</returns>
+    public async Task<string> GetSchemaRedirectAsync(CancellationToken cancellationToken = default)
+    {
+        var url = $"{BaseUrl}/api/schema";
+        var response = await SendRequestInternalAsync<object>(
+            HttpMethod.Get, url, null, true, cancellationToken).ConfigureAwait(false);
+        // Follow redirect manually or return the Location header
+        if (response.Data != null)
+            return response.Data.ToString() ?? string.Empty;
+        return string.Empty;
+    }
+
+    /// <summary>
+    /// Gets the configuration schema at a specific hash.
+    /// GET /api/schema/{hash}
+    /// </summary>
+    /// <param name="hash">SHA-256 hex digest of the configuration schema.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>JSON Schema document (gzipped).</returns>
+    public async Task<byte[]> GetSchemaAsync(string hash, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(hash))
+            throw new ArgumentException("Hash cannot be null or empty.", nameof(hash));
+        var url = $"{BaseUrl}/api/schema/{Uri.EscapeDataString(hash)}";
+        var response = await SendRequestInternalAsync<byte[]>(
+            HttpMethod.Get, url, null, true, cancellationToken).ConfigureAwait(false);
+        return response.Data ?? Array.Empty<byte>();
+    }
+
+    /// <summary>
+    /// Issues a short-lived token for live delivery diagnostics.
+    /// GET /api/token/delivery
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Short-lived delivery token.</returns>
+    public async Task<string> IssueDeliveryTokenAsync(CancellationToken cancellationToken = default)
+    {
+        var url = $"{BaseUrl}/api/token/delivery";
+        var response = await SendRequestAsync<string>(
+            HttpMethod.Get, url, null, true, cancellationToken).ConfigureAwait(false);
+        return response.Data ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Issues a short-lived token for live tracing (Enterprise only).
+    /// GET /api/token/tracing
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Short-lived tracing token, or empty if not available in this edition.</returns>
+    public async Task<string> IssueTracingTokenAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var url = $"{BaseUrl}/api/token/tracing";
+            var response = await SendRequestAsync<string>(
+                HttpMethod.Get, url, null, true, cancellationToken).ConfigureAwait(false);
+            return response.Data ?? string.Empty;
+        }
+        catch (StalwartClientException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            // Enterprise feature not available
+            return string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Issues a short-lived token for live metrics (Enterprise only).
+    /// GET /api/token/metrics
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Short-lived metrics token, or empty if not available in this edition.</returns>
+    public async Task<string> IssueMetricsTokenAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var url = $"{BaseUrl}/api/token/metrics";
+            var response = await SendRequestAsync<string>(
+                HttpMethod.Get, url, null, true, cancellationToken).ConfigureAwait(false);
+            return response.Data ?? string.Empty;
+        }
+        catch (StalwartClientException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            // Enterprise feature not available
+            return string.Empty;
+        }
+    }
+
+    // ========================================================================
     // Internal Request Handling
     // ========================================================================
 

@@ -95,4 +95,55 @@ public interface IStalwartClient : IDisposable
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>True if the API is healthy.</returns>
     Task<bool> CheckHealthAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Discovers the OpenID Connect provider for an email address.
+    /// </summary>
+    /// <param name="email">The email address or account name.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>OIDC discovery document.</returns>
+    Task<System.Collections.Generic.Dictionary<string, object>> DiscoverOidcProviderAsync(string email, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the authenticated account's permissions, edition and locale.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Account information.</returns>
+    Task<AccountInfoResponse> GetAccountInfoAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the configuration schema redirect.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Schema hash redirect URL.</returns>
+    Task<string> GetSchemaRedirectAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the configuration schema at a specific hash.
+    /// </summary>
+    /// <param name="hash">SHA-256 hex digest of the configuration schema.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>JSON Schema document (gzipped).</returns>
+    Task<byte[]> GetSchemaAsync(string hash, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Issues a short-lived token for live delivery diagnostics.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Short-lived delivery token.</returns>
+    Task<string> IssueDeliveryTokenAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Issues a short-lived token for live tracing (Enterprise only).
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Short-lived tracing token, or empty if not available in this edition.</returns>
+    Task<string> IssueTracingTokenAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Issues a short-lived token for live metrics (Enterprise only).
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Short-lived metrics token, or empty if not available in this edition.</returns>
+    Task<string> IssueMetricsTokenAsync(CancellationToken cancellationToken = default);
 }
