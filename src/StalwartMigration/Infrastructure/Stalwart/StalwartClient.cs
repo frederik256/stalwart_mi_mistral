@@ -55,7 +55,6 @@ public class StalwartClient : IStalwartClient
         var handler = new HttpClientHandler
         {
             AllowAutoRedirect = false,
-            MaxAutomaticRedirections = 0,
             ServerCertificateCustomValidationCallback = (_, _, _, _) => true
         };
 
