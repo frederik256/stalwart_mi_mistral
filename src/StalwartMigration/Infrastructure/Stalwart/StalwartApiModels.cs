@@ -90,6 +90,263 @@ public class AuthTokenResponse
     public bool IsExpired => DateTimeOffset.UtcNow >= ExpiresAt;
 }
 
+    /// <summary>
+    /// Login request base class for Stalwart Management API authentication.
+    /// Tagged union discriminated by `type`.
+    /// </summary>
+    [JsonDerivedType(typeof(LoginRequestAuthCode), typeDiscriminator: "authCode")]
+    [JsonDerivedType(typeof(LoginRequestAuthDevice), typeDiscriminator: "authDevice")]
+    public abstract class LoginRequest
+    {
+        /// <summary>
+        /// Gets or sets the type of login request.
+        /// </summary>
+        [JsonPropertyName("type")]
+        public string? Type { get; set; }
+    }
+
+    /// <summary>
+    /// Login request for OAuth authorization-code flow.
+    /// </summary>
+    public class LoginRequestAuthCode : LoginRequest
+    {
+        /// <summary>
+        /// Gets or sets the account name.
+        /// </summary>
+        [JsonPropertyName("accountName")]
+        public string? AccountName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the account secret (password).
+        /// </summary>
+        [JsonPropertyName("accountSecret")]
+        public string? AccountSecret { get; set; }
+
+        /// <summary>
+        /// Gets or sets the MFA token returned by a previous mfaRequired response.
+        /// </summary>
+        [JsonPropertyName("mfaToken")]
+        public string? MfaToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the OAuth client identifier.
+        /// </summary>
+        [JsonPropertyName("clientId")]
+        public string? ClientId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the redirect URI.
+        /// </summary>
+        [JsonPropertyName("redirectUri")]
+        public string? RedirectUri { get; set; }
+
+        /// <summary>
+        /// Gets or sets the nonce.
+        /// </summary>
+        [JsonPropertyName("nonce")]
+        public string? Nonce { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scope.
+        /// </summary>
+        [JsonPropertyName("scope")]
+        public string? Scope { get; set; }
+
+        /// <summary>
+        /// Gets or sets the PKCE code challenge (RFC 7636).
+        /// </summary>
+        [JsonPropertyName("codeChallenge")]
+        public string? CodeChallenge { get; set; }
+
+        /// <summary>
+        /// Gets or sets the PKCE code challenge method.
+        /// </summary>
+        [JsonPropertyName("codeChallengeMethod")]
+        public string? CodeChallengeMethod { get; set; }
+
+        /// <summary>
+        /// Gets or sets the state.
+        /// </summary>
+        [JsonPropertyName("state")]
+        public string? State { get; set; }
+    }
+
+    /// <summary>
+    /// Login request for OAuth device-authorization flow.
+    /// </summary>
+    public class LoginRequestAuthDevice : LoginRequest
+    {
+        /// <summary>
+        /// Gets or sets the account name.
+        /// </summary>
+        [JsonPropertyName("accountName")]
+        public string? AccountName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the account secret (password).
+        /// </summary>
+        [JsonPropertyName("accountSecret")]
+        public string? AccountSecret { get; set; }
+
+        /// <summary>
+        /// Gets or sets the MFA token returned by a previous mfaRequired response.
+        /// </summary>
+        [JsonPropertyName("mfaToken")]
+        public string? MfaToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user-facing device code issued by POST /auth/device.
+        /// </summary>
+        [JsonPropertyName("code")]
+        public string? Code { get; set; }
+    }
+
+    /// <summary>
+    /// Login response base class for Stalwart Management API authentication.
+    /// Tagged union discriminated by `type`.
+    /// </summary>
+    [JsonDerivedType(typeof(LoginResponseAuthenticated), typeDiscriminator: "authenticated")]
+    [JsonDerivedType(typeof(LoginResponseVerified), typeDiscriminator: "verified")]
+    [JsonDerivedType(typeof(LoginResponseMfaRequired), typeDiscriminator: "mfaRequired")]
+    [JsonDerivedType(typeof(LoginResponseFailure), typeDiscriminator: "failure")]
+    public abstract class LoginResponse
+    {
+        /// <summary>
+        /// Gets or sets the type of login response.
+        /// </summary>
+        [JsonPropertyName("type")]
+        public string? Type { get; set; }
+    }
+
+    /// <summary>
+    /// Successful login response with authorization code.
+    /// </summary>
+    public class LoginResponseAuthenticated : LoginResponse
+    {
+        /// <summary>
+        /// Gets or sets the authorization code to exchange at POST /auth/token.
+        /// </summary>
+        [JsonPropertyName("clientCode")]
+        public string? ClientCode { get; set; }
+    }
+
+    /// <summary>
+    /// Login response indicating verification required.
+    /// </summary>
+    public class LoginResponseVerified : LoginResponse
+    {
+    }
+
+    /// <summary>
+    /// Login response indicating MFA is required.
+    /// </summary>
+    public class LoginResponseMfaRequired : LoginResponse
+    {
+    }
+
+    /// <summary>
+    /// Login response indicating failure.
+    /// </summary>
+    public class LoginResponseFailure : LoginResponse
+    {
+    }
+
+    /// <summary>
+    /// Token exchange request for obtaining access token from authorization code.
+    /// </summary>
+    public class TokenExchangeRequest
+    {
+        /// <summary>
+        /// Gets or sets the grant type.
+        /// </summary>
+        [JsonPropertyName("grant_type")]
+        public string? GrantType { get; set; } = "authorization_code";
+
+        /// <summary>
+        /// Gets or sets the authorization code.
+        /// </summary>
+        [JsonPropertyName("code")]
+        public string? Code { get; set; }
+
+        /// <summary>
+        /// Gets or sets the client ID.
+        /// </summary>
+        [JsonPropertyName("client_id")]
+        public string? ClientId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the redirect URI.
+        /// </summary>
+        [JsonPropertyName("redirect_uri")]
+        public string? RedirectUri { get; set; }
+
+        /// <summary>
+        /// Gets or sets the code verifier for PKCE.
+        /// </summary>
+        [JsonPropertyName("code_verifier")]
+        public string? CodeVerifier { get; set; }
+    }
+
+    /// <summary>
+    /// Account information response from /api/account endpoint.
+    /// </summary>
+    public class AccountInfoResponse
+    {
+        /// <summary>
+        /// Gets or sets the list of permissions.
+        /// </summary>
+        [JsonPropertyName("permissions")]
+        public List<string>? Permissions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the edition (oss, community, enterprise).
+        /// </summary>
+        [JsonPropertyName("edition")]
+        public string? Edition { get; set; }
+
+        /// <summary>
+        /// Gets or sets the locale.
+        /// </summary>
+        [JsonPropertyName("locale")]
+        public string? Locale { get; set; }
+    }
+
+    /// <summary>
+    /// RFC 7807 Problem Details response.
+    /// </summary>
+    public class ProblemDetails
+    {
+        /// <summary>
+        /// Gets or sets the type URI.
+        /// </summary>
+        [JsonPropertyName("type")]
+        public string? Type { get; set; }
+
+        /// <summary>
+        /// Gets or sets the title.
+        /// </summary>
+        [JsonPropertyName("title")]
+        public string? Title { get; set; }
+
+        /// <summary>
+        /// Gets or sets the HTTP status code.
+        /// </summary>
+        [JsonPropertyName("status")]
+        public int? Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets the detail message.
+        /// </summary>
+        [JsonPropertyName("detail")]
+        public string? Detail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the instance URI.
+        /// </summary>
+        [JsonPropertyName("instance")]
+        public string? Instance { get; set; }
+    }
+
 #endregion
 
 #region Health Check

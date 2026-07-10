@@ -89,7 +89,7 @@ public class StalwartClient : IStalwartClient
         if (string.IsNullOrEmpty(creds.Username) || string.IsNullOrEmpty(creds.Password))
             throw StalwartClientException.ForUnauthorized("Username and password are required for authentication.");
 
-        var requestUrl = $"{BaseUrl}/api/v1/auth/login";
+        var requestUrl = $"{BaseUrl}/api/auth";
         var requestBody = new { username = creds.Username, password = creds.Password };
 
         var response = await SendRequestInternalAsync<AuthTokenResponse>(
@@ -108,7 +108,7 @@ public class StalwartClient : IStalwartClient
         if (_currentToken?.RefreshToken == null)
             throw StalwartClientException.ForUnauthorized("No refresh token available.");
 
-        var requestUrl = $"{BaseUrl}/api/v1/auth/refresh";
+        var requestUrl = $"{BaseUrl}/api/auth/token";
         var requestBody = new { refresh_token = _currentToken.RefreshToken };
 
         var response = await SendRequestInternalAsync<AuthTokenResponse>(
@@ -135,7 +135,7 @@ public class StalwartClient : IStalwartClient
     /// </summary>
     public async Task<HealthCheckResponse> HealthCheckAsync(CancellationToken cancellationToken = default)
     {
-        var url = $"{BaseUrl}/api/v1/health";
+        var url = $"{BaseUrl}/api/health";
         var response = await SendRequestInternalAsync<HealthCheckResponse>(
             HttpMethod.Get, url, null, false, cancellationToken).ConfigureAwait(false);
         return response.Data ?? new HealthCheckResponse { Status = "unknown" };
@@ -150,7 +150,7 @@ public class StalwartClient : IStalwartClient
     {
         if (string.IsNullOrWhiteSpace(domainId))
             throw new ArgumentException("Domain ID cannot be null or empty.", nameof(domainId));
-        var url = $"{BaseUrl}/api/v1/domains/{Uri.EscapeDataString(domainId)}";
+        var url = $"{BaseUrl}/api/domains/{Uri.EscapeDataString(domainId)}";
         var response = await SendRequestAsync<DomainResponse>(HttpMethod.Get, url, null, true, cancellationToken).ConfigureAwait(false);
         return response.Data ?? throw StalwartClientException.ForNotFound("Domain", domainId);
     }
@@ -160,7 +160,7 @@ public class StalwartClient : IStalwartClient
     {
         if (string.IsNullOrWhiteSpace(domainName))
             throw new ArgumentException("Domain name cannot be null or empty.", nameof(domainName));
-        var url = $"{BaseUrl}/api/v1/domains/name/{Uri.EscapeDataString(domainName)}";
+        var url = $"{BaseUrl}/api/domains/name/{Uri.EscapeDataString(domainName)}";
         var response = await SendRequestAsync<DomainResponse>(HttpMethod.Get, url, null, true, cancellationToken).ConfigureAwait(false);
         return response.Data ?? throw StalwartClientException.ForNotFound("Domain", domainName);
     }
@@ -168,7 +168,7 @@ public class StalwartClient : IStalwartClient
     /// <summary>Lists all domains with optional pagination.</summary>
     public async Task<DomainListResponse> ListDomainsAsync(int offset = 0, int limit = 100, CancellationToken cancellationToken = default)
     {
-        var url = $"{BaseUrl}/api/v1/domains?offset={offset}&limit={limit}";
+        var url = $"{BaseUrl}/api/domains?offset={offset}&limit={limit}";
         var response = await SendRequestAsync<DomainListResponse>(HttpMethod.Get, url, null, true, cancellationToken).ConfigureAwait(false);
         return response.Data ?? new DomainListResponse();
     }
@@ -179,7 +179,7 @@ public class StalwartClient : IStalwartClient
         if (request == null) throw new ArgumentNullException(nameof(request));
         if (string.IsNullOrWhiteSpace(request.Name))
             throw new ArgumentException("Domain name is required.", nameof(request));
-        var url = $"{BaseUrl}/api/v1/domains";
+        var url = $"{BaseUrl}/api/domains";
         var response = await SendRequestAsync<DomainResponse>(HttpMethod.Post, url, request, true, cancellationToken).ConfigureAwait(false);
         return response.Data ?? throw new StalwartClientException("Failed to create domain: empty response from API.");
     }
@@ -190,7 +190,7 @@ public class StalwartClient : IStalwartClient
         if (string.IsNullOrWhiteSpace(domainId))
             throw new ArgumentException("Domain ID cannot be null or empty.", nameof(domainId));
         if (request == null) throw new ArgumentNullException(nameof(request));
-        var url = $"{BaseUrl}/api/v1/domains/{Uri.EscapeDataString(domainId)}";
+        var url = $"{BaseUrl}/api/domains/{Uri.EscapeDataString(domainId)}";
         var response = await SendRequestAsync<DomainResponse>(HttpMethod.Put, url, request, true, cancellationToken).ConfigureAwait(false);
         return response.Data ?? throw StalwartClientException.ForNotFound("Domain", domainId);
     }
@@ -200,7 +200,7 @@ public class StalwartClient : IStalwartClient
     {
         if (string.IsNullOrWhiteSpace(domainId))
             throw new ArgumentException("Domain ID cannot be null or empty.", nameof(domainId));
-        var url = $"{BaseUrl}/api/v1/domains/{Uri.EscapeDataString(domainId)}";
+        var url = $"{BaseUrl}/api/domains/{Uri.EscapeDataString(domainId)}";
         await SendRequestAsync<object>(HttpMethod.Delete, url, null, true, cancellationToken).ConfigureAwait(false);
     }
 
@@ -213,7 +213,7 @@ public class StalwartClient : IStalwartClient
     {
         if (string.IsNullOrWhiteSpace(accountId))
             throw new ArgumentException("Account ID cannot be null or empty.", nameof(accountId));
-        var url = $"{BaseUrl}/api/v1/accounts/{Uri.EscapeDataString(accountId)}";
+        var url = $"{BaseUrl}/api/accounts/{Uri.EscapeDataString(accountId)}";
         var response = await SendRequestAsync<AccountResponse>(HttpMethod.Get, url, null, true, cancellationToken).ConfigureAwait(false);
         return response.Data ?? throw StalwartClientException.ForNotFound("Account", accountId);
     }
@@ -223,7 +223,7 @@ public class StalwartClient : IStalwartClient
     {
         if (string.IsNullOrWhiteSpace(email))
             throw new ArgumentException("Email cannot be null or empty.", nameof(email));
-        var url = $"{BaseUrl}/api/v1/accounts/email/{Uri.EscapeDataString(email)}";
+        var url = $"{BaseUrl}/api/accounts/email/{Uri.EscapeDataString(email)}";
         var response = await SendRequestAsync<AccountResponse>(HttpMethod.Get, url, null, true, cancellationToken).ConfigureAwait(false);
         return response.Data ?? throw StalwartClientException.ForNotFound("Account", email);
     }
@@ -231,7 +231,7 @@ public class StalwartClient : IStalwartClient
     /// <summary>Lists all accounts with optional pagination.</summary>
     public async Task<AccountListResponse> ListAccountsAsync(string? domainId = null, int offset = 0, int limit = 100, CancellationToken cancellationToken = default)
     {
-        var url = $"{BaseUrl}/api/v1/accounts?offset={offset}&limit={limit}";
+        var url = $"{BaseUrl}/api/accounts?offset={offset}&limit={limit}";
         if (!string.IsNullOrEmpty(domainId))
             url += $"&domain_id={Uri.EscapeDataString(domainId)}";
         var response = await SendRequestAsync<AccountListResponse>(HttpMethod.Get, url, null, true, cancellationToken).ConfigureAwait(false);
@@ -244,7 +244,7 @@ public class StalwartClient : IStalwartClient
         if (request == null) throw new ArgumentNullException(nameof(request));
         if (string.IsNullOrWhiteSpace(request.Name))
             throw new ArgumentException("Account name is required.", nameof(request));
-        var url = $"{BaseUrl}/api/v1/accounts";
+        var url = $"{BaseUrl}/api/accounts";
         var response = await SendRequestAsync<AccountResponse>(HttpMethod.Post, url, request, true, cancellationToken).ConfigureAwait(false);
         return response.Data ?? throw new StalwartClientException("Failed to create account: empty response from API.");
     }
@@ -255,7 +255,7 @@ public class StalwartClient : IStalwartClient
         if (string.IsNullOrWhiteSpace(accountId))
             throw new ArgumentException("Account ID cannot be null or empty.", nameof(accountId));
         if (request == null) throw new ArgumentNullException(nameof(request));
-        var url = $"{BaseUrl}/api/v1/accounts/{Uri.EscapeDataString(accountId)}";
+        var url = $"{BaseUrl}/api/accounts/{Uri.EscapeDataString(accountId)}";
         var response = await SendRequestAsync<AccountResponse>(HttpMethod.Put, url, request, true, cancellationToken).ConfigureAwait(false);
         return response.Data ?? throw StalwartClientException.ForNotFound("Account", accountId);
     }
@@ -265,7 +265,7 @@ public class StalwartClient : IStalwartClient
     {
         if (string.IsNullOrWhiteSpace(accountId))
             throw new ArgumentException("Account ID cannot be null or empty.", nameof(accountId));
-        var url = $"{BaseUrl}/api/v1/accounts/{Uri.EscapeDataString(accountId)}";
+        var url = $"{BaseUrl}/api/accounts/{Uri.EscapeDataString(accountId)}";
         await SendRequestAsync<object>(HttpMethod.Delete, url, null, true, cancellationToken).ConfigureAwait(false);
     }
 
@@ -278,7 +278,7 @@ public class StalwartClient : IStalwartClient
     {
         if (string.IsNullOrWhiteSpace(aliasId))
             throw new ArgumentException("Alias ID cannot be null or empty.", nameof(aliasId));
-        var url = $"{BaseUrl}/api/v1/aliases/{Uri.EscapeDataString(aliasId)}";
+        var url = $"{BaseUrl}/api/aliases/{Uri.EscapeDataString(aliasId)}";
         var response = await SendRequestAsync<AliasResponse>(HttpMethod.Get, url, null, true, cancellationToken).ConfigureAwait(false);
         return response.Data ?? throw StalwartClientException.ForNotFound("Alias", aliasId);
     }
@@ -286,7 +286,7 @@ public class StalwartClient : IStalwartClient
     /// <summary>Lists all aliases with optional pagination.</summary>
     public async Task<AliasListResponse> ListAliasesAsync(string? domainId = null, string? accountId = null, int offset = 0, int limit = 100, CancellationToken cancellationToken = default)
     {
-        var url = $"{BaseUrl}/api/v1/aliases?offset={offset}&limit={limit}";
+        var url = $"{BaseUrl}/api/aliases?offset={offset}&limit={limit}";
         if (!string.IsNullOrEmpty(domainId))
             url += $"&domain_id={Uri.EscapeDataString(domainId)}";
         if (!string.IsNullOrEmpty(accountId))
@@ -303,7 +303,7 @@ public class StalwartClient : IStalwartClient
             throw new ArgumentException("Alias source is required.", nameof(request));
         if (string.IsNullOrWhiteSpace(request.Destination))
             throw new ArgumentException("Alias destination is required.", nameof(request));
-        var url = $"{BaseUrl}/api/v1/aliases";
+        var url = $"{BaseUrl}/api/aliases";
         var response = await SendRequestAsync<AliasResponse>(HttpMethod.Post, url, request, true, cancellationToken).ConfigureAwait(false);
         return response.Data ?? throw new StalwartClientException("Failed to create alias: empty response from API.");
     }
@@ -314,7 +314,7 @@ public class StalwartClient : IStalwartClient
         if (string.IsNullOrWhiteSpace(aliasId))
             throw new ArgumentException("Alias ID cannot be null or empty.", nameof(aliasId));
         if (request == null) throw new ArgumentNullException(nameof(request));
-        var url = $"{BaseUrl}/api/v1/aliases/{Uri.EscapeDataString(aliasId)}";
+        var url = $"{BaseUrl}/api/aliases/{Uri.EscapeDataString(aliasId)}";
         var response = await SendRequestAsync<AliasResponse>(HttpMethod.Put, url, request, true, cancellationToken).ConfigureAwait(false);
         return response.Data ?? throw StalwartClientException.ForNotFound("Alias", aliasId);
     }
@@ -324,7 +324,7 @@ public class StalwartClient : IStalwartClient
     {
         if (string.IsNullOrWhiteSpace(aliasId))
             throw new ArgumentException("Alias ID cannot be null or empty.", nameof(aliasId));
-        var url = $"{BaseUrl}/api/v1/aliases/{Uri.EscapeDataString(aliasId)}";
+        var url = $"{BaseUrl}/api/aliases/{Uri.EscapeDataString(aliasId)}";
         await SendRequestAsync<object>(HttpMethod.Delete, url, null, true, cancellationToken).ConfigureAwait(false);
     }
 
