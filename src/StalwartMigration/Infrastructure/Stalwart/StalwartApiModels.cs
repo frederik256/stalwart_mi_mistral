@@ -288,6 +288,57 @@ public class AuthTokenResponse
     }
 
     /// <summary>
+    /// Raw login response for deserialization without polymorphic handling.
+    /// Used when System.Text.Json cannot handle JsonDerivedType at runtime.
+    /// </summary>
+    public class LoginResponseRaw
+    {
+        [JsonPropertyName("type")]
+        public string? Type { get; set; }
+
+        [JsonPropertyName("client_code")]
+        public string? ClientCode { get; set; }
+
+        [JsonPropertyName("iss")]
+        public string? Iss { get; set; }
+    }
+
+    /// <summary>
+    /// Parses a login response by manually handling the tagged union discriminator.
+    /// Used because System.Text.Json does not support JsonDerivedType at runtime.
+    /// </summary>
+    public static class LoginResponseParser
+    {
+        /// <summary>
+        /// Parses a login response from raw data.
+        /// </summary>
+        public static LoginResponse? Parse(string type, LoginResponseRaw? raw)
+        {
+            return type switch
+            {
+                "authenticated" => new LoginResponseAuthenticated
+                {
+                    Type = raw?.Type,
+                    ClientCode = raw?.ClientCode
+                },
+                "verified" => new LoginResponseVerified
+                {
+                    Type = raw?.Type
+                },
+                "mfaRequired" => new LoginResponseMfaRequired
+                {
+                    Type = raw?.Type
+                },
+                "failure" => new LoginResponseFailure
+                {
+                    Type = raw?.Type
+                },
+                _ => null
+            };
+        }
+    }
+
+    /// <summary>
     /// Account information response from /api/account endpoint.
     /// </summary>
     public class AccountInfoResponse

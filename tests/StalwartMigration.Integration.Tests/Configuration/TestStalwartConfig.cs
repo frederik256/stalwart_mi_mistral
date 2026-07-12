@@ -3,6 +3,7 @@
 // </copyright>
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.UserSecrets;
 using System.IO;
 
 namespace StalwartMigration.Integration.Tests.Configuration;

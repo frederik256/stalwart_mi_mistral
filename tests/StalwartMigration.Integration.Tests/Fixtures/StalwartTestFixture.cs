@@ -4,6 +4,8 @@
 
 using System.Diagnostics;
 using StalwartMigration.Infrastructure.Stalwart;
+using StalwartMigration.Integration.Tests.Infrastructure;
+using Xunit;
 
 namespace StalwartMigration.Integration.Tests.Fixtures;
 
@@ -43,15 +45,29 @@ public class StalwartTestFixture : IAsyncLifetime, IDisposable
     /// <summary>
     /// Initializes a new instance of the StalwartTestFixture class.
     /// </summary>
-    /// <param name="shared">If true, creates a shared fixture. If false, creates an isolated fixture with random ports.</param>
-    /// <param name="fixedPort">If specified, uses this fixed port. Otherwise, a random port is assigned.</param>
-    public StalwartTestFixture(bool shared = true, int? fixedPort = null)
+    public StalwartTestFixture()
     {
-        _shared = shared;
+        _shared = true;
+        
+        // Read admin password from STALWART_RECOVERY_ADMIN environment variable
+        // Format: username:password (e.g., admin:mySecretPass)
+        string? adminPassword = null;
+        var recoveryAdminEnv = Environment.GetEnvironmentVariable("STALWART_RECOVERY_ADMIN");
+        if (!string.IsNullOrEmpty(recoveryAdminEnv))
+        {
+            var parts = recoveryAdminEnv.Split(':', 2);
+            if (parts.Length == 2)
+            {
+                adminPassword = parts[1];
+            }
+        }
+        
+        // Unique name so a leaked container from an aborted run can never
+        // block the next one with a name conflict.
         _dockerHelper = new DockerHelper(
-            containerName: shared ? "stalwart-test-shared" : null,
-            hostPort: fixedPort ?? 0,
-            adminPassword: null
+            containerName: $"stalwart-test-shared-{Guid.NewGuid():N}",
+            hostPort: 0,
+            adminPassword: adminPassword
         );
         _disposed = false;
     }
@@ -63,26 +79,38 @@ public class StalwartTestFixture : IAsyncLifetime, IDisposable
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task InitializeAsync()
     {
-        // Start the container
-        await _dockerHelper.StartContainerAsync();
-        
-        // Wait for health check
-        await _dockerHelper.WaitForHealthyAsync(timeoutSeconds: 120);
-        
-        // Get credentials
-        _credentials = _dockerHelper.GetAdminCredentials();
-        
-        // Create the client
-        var options = new StalwartClientOptions
+        try
         {
-            Timeout = TimeSpan.FromSeconds(30),
-            MaxRetries = 3
-        };
-        
-        _stalwartClient = new StalwartClient(_dockerHelper.ApiUrl, _credentials, options);
-        
-        // Authenticate
-        await _stalwartClient.AuthenticateAsync(_credentials);
+            // Start the container
+            await _dockerHelper.StartContainerAsync();
+
+            // Wait for health check
+            await _dockerHelper.WaitForHealthyAsync(timeoutSeconds: 120);
+
+            // Get credentials
+            _credentials = _dockerHelper.GetAdminCredentials();
+
+            // Create the client
+            var options = new StalwartClientOptions
+            {
+                Timeout = TimeSpan.FromSeconds(30),
+                MaxRetries = 3
+            };
+
+            _stalwartClient = new StalwartClient(_dockerHelper.ApiUrl, _credentials, options);
+
+            // Authenticate
+            await _stalwartClient.AuthenticateAsync(_credentials);
+        }
+        catch
+        {
+            // xUnit does not call DisposeAsync when InitializeAsync throws,
+            // so tear down here or the container leaks across runs.
+            _stalwartClient?.Dispose();
+            _stalwartClient = null;
+            await _dockerHelper.CleanupAsync();
+            throw;
+        }
     }
 
     /// <summary>
@@ -121,10 +149,10 @@ public class StalwartTestFixture : IAsyncLifetime, IDisposable
     /// <summary>
     /// IAsyncLifetime disposal.
     /// </summary>
-    /// <returns>A value task representing the asynchronous operation.</returns>
-    async ValueTask IAsyncLifetime.DisposeAsync()
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task IAsyncLifetime.DisposeAsync()
     {
-        await DisposeAsync();
+        return DisposeAsync();
     }
 
     /// <summary>

@@ -89,15 +89,49 @@ public class StalwartClient : IStalwartClient
         if (string.IsNullOrEmpty(creds.Username) || string.IsNullOrEmpty(creds.Password))
             throw StalwartClientException.ForUnauthorized("Username and password are required for authentication.");
 
-        var requestUrl = $"{BaseUrl}/api/auth";
-        var requestBody = new { username = creds.Username, password = creds.Password };
+        // Step 1: Authenticate via /api/auth (authCode flow)
+        // Note: System.Text.Json does not support JsonDerivedType at runtime,
+        // so we use a custom approach to handle the discriminated union response.
+        var authRequestUrl = $"{BaseUrl}/api/auth";
+        var authRequestBody = new
+        {
+            type = "authCode",
+            accountName = creds.Username,
+            accountSecret = creds.Password,
+            mfaToken = (string?)null,
+            clientId = "stalwart-webui",
+            redirectUri = $"{BaseUrl}/admin/oauth/callback",
+            nonce = (string?)null,
+            scope = (string?)null,
+            codeChallenge = (string?)null,
+            codeChallengeMethod = (string?)null,
+            state = (string?)null
+        };
 
-        var response = await SendRequestInternalAsync<AuthTokenResponse>(
-            HttpMethod.Post, requestUrl, requestBody, false, cancellationToken).ConfigureAwait(false);
+        var authResponse = await SendRequestInternalAsync<LoginResponseRaw>(
+            HttpMethod.Post, authRequestUrl, authRequestBody, false, cancellationToken).ConfigureAwait(false);
 
-        _currentToken = response.Data ?? throw StalwartClientException.ForUnauthorized("Empty token response from API.");
-        _logger.LogInformation("Authenticated with Stalwart API. Token expires at {ExpiresAt}", _currentToken.ExpiresAt);
-        return _currentToken;
+        // Parse the tagged union response manually (JsonDerivedType not supported at runtime by System.Text.Json)
+        var loginResponse = LoginResponseParser.Parse(authResponse.Data?.Type ?? "", authResponse.Data);
+        if (loginResponse is LoginResponseAuthenticated authenticated)
+        {
+            // Step 2: Exchange the client code for tokens at the standard OAuth
+            // endpoint /auth/token, which expects form-encoded data. (/api/token
+            // is a protected management endpoint and returns 401 here.)
+            _currentToken = await SendTokenRequestAsync(new Dictionary<string, string>
+            {
+                ["grant_type"] = "authorization_code",
+                ["code"] = authenticated.ClientCode ?? string.Empty,
+                ["client_id"] = "stalwart-webui",
+                ["redirect_uri"] = $"{BaseUrl}/admin/oauth/callback"
+            }, cancellationToken).ConfigureAwait(false);
+
+            _logger.LogInformation("Authenticated with Stalwart API. Token expires at {ExpiresAt}", _currentToken.ExpiresAt);
+            return _currentToken;
+        }
+
+        throw StalwartClientException.ForUnauthorized(
+            $"Authentication failed: {loginResponse?.Type ?? "unknown"}");
     }
 
     /// <summary>
@@ -108,13 +142,16 @@ public class StalwartClient : IStalwartClient
         if (_currentToken?.RefreshToken == null)
             throw StalwartClientException.ForUnauthorized("No refresh token available.");
 
-        var requestUrl = $"{BaseUrl}/api/auth/token";
-        var requestBody = new { refresh_token = _currentToken.RefreshToken };
+        var response = await SendTokenRequestAsync(new Dictionary<string, string>
+        {
+            ["grant_type"] = "refresh_token",
+            ["refresh_token"] = _currentToken.RefreshToken,
+            ["client_id"] = "stalwart-webui"
+        }, cancellationToken).ConfigureAwait(false);
 
-        var response = await SendRequestInternalAsync<AuthTokenResponse>(
-            HttpMethod.Post, requestUrl, requestBody, false, cancellationToken).ConfigureAwait(false);
-
-        _currentToken = response.Data ?? throw StalwartClientException.ForUnauthorized("Empty token response from API.");
+        // The refresh response carries no new refresh token; keep the old one.
+        response.RefreshToken ??= _currentToken.RefreshToken;
+        _currentToken = response;
         _logger.LogInformation("Refreshed authentication token. New token expires at {ExpiresAt}", _currentToken.ExpiresAt);
         return _currentToken;
     }
@@ -487,8 +524,15 @@ public class StalwartClient : IStalwartClient
                 var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 if (typeof(T) == typeof(string))
                     return new ApiResponse<T> { Success = true, Data = (T)(object)responseBody };
-                var result = JsonSerializer.Deserialize<ApiResponse<T>>(responseBody, _options.JsonSerializerOptions);
-                return result ?? new ApiResponse<T> { Success = true, Data = default };
+                
+                // Try to deserialize as T directly (for endpoints like /api/auth that return unwrapped objects)
+                var directResult = JsonSerializer.Deserialize<T>(responseBody, _options.JsonSerializerOptions);
+                if (directResult != null)
+                    return new ApiResponse<T> { Success = true, Data = directResult };
+                
+                // Fall back to wrapped ApiResponse<T>
+                var wrappedResult = JsonSerializer.Deserialize<ApiResponse<T>>(responseBody, _options.JsonSerializerOptions);
+                return wrappedResult ?? new ApiResponse<T> { Success = true, Data = default };
             }
             else
             {
@@ -496,6 +540,30 @@ public class StalwartClient : IStalwartClient
                 _logger.LogError(ex, "API request failed");
                 throw ex;
             }
+        }).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Sends a form-encoded request to the OAuth token endpoint (/auth/token).
+    /// </summary>
+    private async Task<AuthTokenResponse> SendTokenRequestAsync(
+        Dictionary<string, string> form, CancellationToken cancellationToken)
+    {
+        return await ExecuteWithRetryAsync(async () =>
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/auth/token");
+            request.Content = new FormUrlEncodedContent(form);
+            var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+            {
+                var ex = await StalwartClientException.FromResponseAsync(response).ConfigureAwait(false);
+                _logger.LogError(ex, "Token request failed");
+                throw ex;
+            }
+
+            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var token = JsonSerializer.Deserialize<AuthTokenResponse>(body, _options.JsonSerializerOptions);
+            return token ?? throw StalwartClientException.ForUnauthorized("Empty token response from API.");
         }).ConfigureAwait(false);
     }
 

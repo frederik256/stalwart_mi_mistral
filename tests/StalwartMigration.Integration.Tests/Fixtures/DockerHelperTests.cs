@@ -23,9 +23,10 @@ public class DockerHelperTests : IAsyncLifetime
     /// </summary>
     public DockerHelperTests()
     {
-        // Use a fixed port for testing
+        // Unique name per test instance: xUnit creates one instance per test,
+        // so a fixed name would conflict with a container from a previous test.
         _dockerHelper = new DockerHelper(
-            containerName: "stalwart-test-dockerhelper",
+            containerName: $"stalwart-test-dockerhelper-{Guid.NewGuid():N}",
             hostPort: 0, // Random port
             adminPassword: "testpassword123"
         );
@@ -37,11 +38,22 @@ public class DockerHelperTests : IAsyncLifetime
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task InitializeAsync()
     {
-        // Start the container
-        await _dockerHelper.StartContainerAsync();
-        
-        // Wait for health check
-        await _dockerHelper.WaitForHealthyAsync(timeoutSeconds: 120);
+        try
+        {
+            // Start the container
+            await _dockerHelper.StartContainerAsync();
+
+            // Wait for health check
+            await _dockerHelper.WaitForHealthyAsync(timeoutSeconds: 120);
+        }
+        catch
+        {
+            // xUnit does not call DisposeAsync when InitializeAsync throws,
+            // so tear down here or the container leaks across runs.
+            await _dockerHelper.CleanupAsync();
+            _dockerHelper.Dispose();
+            throw;
+        }
     }
 
     /// <summary>
@@ -114,35 +126,19 @@ public class DockerHelperTests : IAsyncLifetime
 /// <summary>
 /// Tests for the StalwartTestFixture class.
 /// </summary>
-public class StalwartTestFixtureTests : IClassFixture<StalwartTestFixture>, IAsyncLifetime
+public class StalwartTestFixtureTests : IClassFixture<StalwartTestFixture>
 {
     private readonly StalwartTestFixture _fixture;
-    
+
     /// <summary>
     /// Initializes a new instance of the StalwartTestFixtureTests class.
     /// </summary>
-    /// <param name="fixture">The shared fixture.</param>
+    /// <param name="fixture">The shared fixture. xUnit initializes and disposes
+    /// it once per class via IAsyncLifetime; re-initializing per test would
+    /// throw because the container is already running.</param>
     public StalwartTestFixtureTests(StalwartTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    /// <summary>
-    /// IAsyncLifetime initialization.
-    /// </summary>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    public async Task InitializeAsync()
-    {
-        await _fixture.InitializeAsync();
-    }
-
-    /// <summary>
-    /// IAsyncLifetime disposal.
-    /// </summary>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    public Task DisposeAsync()
-    {
-        return Task.CompletedTask; // Fixture handles its own cleanup
     }
 
     /// <summary>
