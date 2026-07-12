@@ -209,6 +209,20 @@ public class StalwartTestFixture : IAsyncLifetime, IDisposable
 }
 
 /// <summary>
+/// xUnit collection definition so every test class that needs a live Stalwart
+/// server shares the one <see cref="StalwartTestFixture"/> instance (and container)
+/// for the whole test run. Without this, each class using
+/// <c>IClassFixture&lt;StalwartTestFixture&gt;</c> directly gets its own instance,
+/// which would start a separate container per test class.
+/// </summary>
+[CollectionDefinition(Name)]
+public class StalwartCollection : ICollectionFixture<StalwartTestFixture>
+{
+    /// <summary>The collection name used in <c>[Collection(StalwartCollection.Name)]</c>.</summary>
+    public const string Name = "Stalwart";
+}
+
+/// <summary>
 /// Attribute to mark test classes that should use a shared Stalwart fixture.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]

@@ -28,6 +28,16 @@ The rest of this plan (Phases 2-5, below) was written before that container exis
 
 The task list below is left in place for historical context but Phases 2-5 acceptance criteria should be read through the lens above; concrete near-term tasks are tracked in `stalwart-test-server-todo.md`.
 
+## Update (2026-07-12): Domain/account/alias CRUD is not part of the REST API
+
+While implementing T4, I verified against a live Stalwart v0.16 container that `GET/POST/PUT/DELETE /api/domains`, `/api/accounts`, and `/api/aliases` (and their singular/id variants) all return **404 Not Found**, even with a valid admin bearer token. I then pulled Stalwart's actual OpenAPI spec (`api/v1/openapi.yml` in `stalwartlabs/stalwart`) and confirmed it documents exactly 11 paths — `/api/auth`, `/api/account`, `/api/discover/{email}`, `/api/schema[/{hash}]`, `/api/token/{delivery,tracing,metrics}`, `/api/live/*` — with no domain/account/alias/directory management endpoints. The spec states directly that most server configuration and directory data is managed via **JMAP**, not this REST API. I confirmed `/.well-known/jmap` is live (307 redirect) on the same container.
+
+This means `StalwartClient.CreateDomainAsync`/`GetDomainAsync`/`CreateAccountAsync`/`CreateAliasAsync`, etc. — the entire CRUD surface `AccountManager` wraps, and the assumption baked into `DomainRequest`/`AccountRequest`/`AliasRequest` — target endpoints that don't exist on a real server. This is not a T4 test-scoping problem; it's a structural gap: **the migration tool's core domain/account/alias provisioning cannot work against a live Stalwart instance as currently written.**
+
+Presented with this, the decision was to keep T4 scoped to the REST endpoints that are actually real (auth, account info, discovery, schema, tokens) rather than write CRUD tests that could only fail, or attempt a JMAP client as a side effect of a test-writing task. T4 is done under that reduced scope (see `stalwart-test-server-todo.md`); while doing so I also found and fixed three real bugs in `StalwartClient` uncovered by testing the real endpoints (`GetSchemaRedirectAsync` throwing on the live 302 response instead of reading `Location`, `GetSchemaAsync` misusing JSON deserialization on a binary/gzip payload, and missing `AutomaticDecompression` on the `HttpClientHandler`).
+
+**Open decision, not yet made**: whether/how to add JMAP support to `StalwartClient` so domain/account/alias provisioning actually works against a real server. This blocks T5 (`AccountManager` integration coverage — every candidate test there is a thin wrapper over the same broken REST paths) and, more importantly, blocks the migration tool's actual purpose of provisioning domains/accounts on a real Stalwart target. This is a bigger, separate piece of work — a JMAP client is a different protocol (JSON method-call batches over a session endpoint, not REST verbs on resource paths), not a drop-in fix.
+
 ## Architecture Decisions
 
 ### 1. Containerized Deployment

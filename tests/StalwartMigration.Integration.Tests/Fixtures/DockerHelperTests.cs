@@ -126,7 +126,8 @@ public class DockerHelperTests : IAsyncLifetime
 /// <summary>
 /// Tests for the StalwartTestFixture class.
 /// </summary>
-public class StalwartTestFixtureTests : IClassFixture<StalwartTestFixture>
+[Collection(StalwartCollection.Name)]
+public class StalwartTestFixtureTests
 {
     private readonly StalwartTestFixture _fixture;
 

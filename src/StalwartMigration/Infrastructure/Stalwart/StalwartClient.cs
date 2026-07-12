@@ -55,6 +55,7 @@ public class StalwartClient : IStalwartClient
         var handler = new HttpClientHandler
         {
             AllowAutoRedirect = false,
+            AutomaticDecompression = DecompressionMethods.All,
             ServerCertificateCustomValidationCallback = (_, _, _, _) => true
         };
 
@@ -402,36 +403,62 @@ public class StalwartClient : IStalwartClient
 
     /// <summary>
     /// Gets the configuration schema redirect.
-    /// GET /api/schema - Redirects to /api/schema/{hash}
+    /// GET /api/schema - Redirects (302) to /api/schema/{hash}. The client disables
+    /// auto-redirect, so this reads the Location header directly rather than going
+    /// through the generic JSON response handling, which treats any non-2xx as an error.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>Schema hash redirect URL.</returns>
+    /// <returns>The redirect target path, e.g. "/api/schema/{hash}".</returns>
     public async Task<string> GetSchemaRedirectAsync(CancellationToken cancellationToken = default)
     {
-        var url = $"{BaseUrl}/api/schema";
-        var response = await SendRequestInternalAsync<object>(
-            HttpMethod.Get, url, null, true, cancellationToken).ConfigureAwait(false);
-        // Follow redirect manually or return the Location header
-        if (response.Data != null)
-            return response.Data.ToString() ?? string.Empty;
-        return string.Empty;
+        await EnsureAuthenticatedAsync(cancellationToken).ConfigureAwait(false);
+        return await ExecuteWithRetryAsync(async () =>
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"{BaseUrl}/api/schema");
+            if (_currentToken != null)
+                request.Headers.Authorization = new AuthenticationHeaderValue(
+                    _currentToken.TokenType ?? "Bearer", _currentToken.AccessToken);
+            var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            if (response.StatusCode is HttpStatusCode.Found or HttpStatusCode.MovedPermanently or HttpStatusCode.SeeOther or HttpStatusCode.TemporaryRedirect)
+                return response.Headers.Location?.ToString() ?? string.Empty;
+            if (response.IsSuccessStatusCode)
+                return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+
+            var ex = await StalwartClientException.FromResponseAsync(response).ConfigureAwait(false);
+            _logger.LogError(ex, "Schema redirect request failed");
+            throw ex;
+        }).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Gets the configuration schema at a specific hash.
     /// GET /api/schema/{hash}
+    /// The response body is a JSON document, not a byte-array-shaped JSON value, so this
+    /// reads the raw response bytes directly rather than deserializing them as JSON.
     /// </summary>
     /// <param name="hash">SHA-256 hex digest of the configuration schema.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>JSON Schema document (gzipped).</returns>
+    /// <returns>The JSON Schema document, as UTF-8 bytes.</returns>
     public async Task<byte[]> GetSchemaAsync(string hash, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(hash))
             throw new ArgumentException("Hash cannot be null or empty.", nameof(hash));
-        var url = $"{BaseUrl}/api/schema/{Uri.EscapeDataString(hash)}";
-        var response = await SendRequestInternalAsync<byte[]>(
-            HttpMethod.Get, url, null, true, cancellationToken).ConfigureAwait(false);
-        return response.Data ?? Array.Empty<byte>();
+
+        await EnsureAuthenticatedAsync(cancellationToken).ConfigureAwait(false);
+        return await ExecuteWithRetryAsync(async () =>
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"{BaseUrl}/api/schema/{Uri.EscapeDataString(hash)}");
+            if (_currentToken != null)
+                request.Headers.Authorization = new AuthenticationHeaderValue(
+                    _currentToken.TokenType ?? "Bearer", _currentToken.AccessToken);
+            var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            if (response.IsSuccessStatusCode)
+                return await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+
+            var ex = await StalwartClientException.FromResponseAsync(response).ConfigureAwait(false);
+            _logger.LogError(ex, "Schema request failed");
+            throw ex;
+        }).ConfigureAwait(false);
     }
 
     /// <summary>

@@ -150,42 +150,53 @@ The original Phase 2/3/5 tasks (T4, T5, T9, T10) called for dedicated `TestDataI
 
 This replaces the original Phase 2 (T4/T5) and Phase 3 (T6/T7) with two tasks scoped to the revised strategy in `stalwart-test-server-plan.md`: reuse the shared fixture, configure the server via the CRUD methods that already exist, isolate by naming + per-test cleanup rather than by container.
 
-### Task 4 (revised): StalwartClient CRUD integration tests
+### Task 4 (revised): StalwartClient integration tests
 **ID**: T4  
 **Priority**: High  
-**Status**: Pending  
+**Status**: ✅ Done (2026-07-12) — scope changed, see below  
 **Estimated**: 0.5-1 day  
 **Assignee**: (unassigned)
 
-**Description**: Add `Integration/StalwartClientIntegrationTests.cs`, using the existing shared `StalwartTestFixture` (`IClassFixture<StalwartTestFixture>`). Each test configures only what it needs directly through `StalwartClient` — no new helper/initializer classes.
+**Description**: Add `Integration/StalwartClientIntegrationTests.cs`, using the existing shared `StalwartTestFixture` via a new `[Collection(StalwartCollection.Name)]` xUnit collection fixture (added so this class and `StalwartTestFixtureTests` share one container instead of each `IClassFixture<StalwartTestFixture>` spinning up its own).
 
-**Acceptance Criteria**:
-- [ ] Domain round-trip: `CreateDomainAsync` → `GetDomainAsync`/`GetDomainByNameAsync` → `UpdateDomainAsync` → `DeleteDomainAsync`, each test using a unique domain name (e.g. `{Guid:N}.test.invalid`)
-- [ ] Account round-trip: create a domain, then `CreateAccountAsync` → `GetAccountAsync`/`GetAccountByEmailAsync` → `UpdateAccountAsync` → `DeleteAccountAsync`
-- [ ] Alias round-trip: `CreateAliasAsync` → `GetAliasAsync` → `UpdateAliasAsync` → `DeleteAliasAsync`
-- [ ] One realistic error case per resource (e.g. `GetDomainAsync` with an unknown id → 404-mapped exception)
-- [ ] Every test cleans up what it created (delete the domain it made; deleting a domain cascades its accounts/aliases) so the shared container doesn't accumulate state across the run
+**Scope change discovered mid-implementation**: verified against a live Stalwart v0.16 container that `/api/domains`, `/api/accounts`, `/api/aliases` (and singular/id variants) all return 404 — pulled Stalwart's actual OpenAPI spec and confirmed domain/account/alias/directory management is exposed via **JMAP**, not this REST API. So the originally-planned domain/account/alias CRUD acceptance criteria were dropped; user decided to scope T4 to the endpoints that actually exist. Implemented instead:
+- [x] `AuthenticateAsync` with valid and invalid credentials (success + `Unauthorized` error path)
+- [x] `RefreshTokenAsync` after authenticating
+- [x] `GetAccountInfoAsync` → `/api/account`
+- [x] `DiscoverOidcProviderAsync` → `/api/discover/{email}`
+- [x] `GetSchemaRedirectAsync` + `GetSchemaAsync` chained (redirect hash → schema document)
+- [x] `IssueDeliveryTokenAsync` (succeeds) and `IssueTracingTokenAsync`/`IssueMetricsTokenAsync` (empty string on community edition, confirming the 404→"" fallback)
+
+**Bugs found and fixed while making these pass for real** (not test-writing mistakes — confirmed via live container before and after):
+- `GetSchemaRedirectAsync` unconditionally threw: the client sets `AllowAutoRedirect = false`, so the real 302 response was routed through the generic JSON-response path, which treats any non-2xx as an error. Rewrote it to read the `Location` header directly.
+- `GetSchemaAsync` tried to `JsonSerializer.Deserialize<byte[]>` a JSON *object* body (the schema document) — always would have thrown. Rewrote it to read the response bytes directly instead of going through the generic JSON deserialization path.
+- The `HttpClientHandler` had no `AutomaticDecompression`, so the gzip-encoded `/api/schema/{hash}` response would have come through as raw compressed bytes. Added `AutomaticDecompression = DecompressionMethods.All`.
 
 **Verification Checklist**:
-- [ ] Tests pass consistently against the shared fixture container
-- [ ] No test depends on ordering or on another test's leftover state
-- [ ] Adds no more than ~15-20s beyond the existing ~20s fixture startup (no extra containers spun up)
+- [x] Tests pass consistently against the shared fixture container (16/16 integration tests, ~20s total — same runtime as before T4, confirming the collection fixture correctly shares one container rather than spinning up a second)
+- [x] No test depends on ordering or on another test's leftover state
+- [x] No extra containers spun up (verified via `docker ps`/`docker volume ls` before and after)
 
 **Dependencies**: T1, T3 (both done)
 
 **Files to Create/Modify**:
 - `tests/StalwartMigration.Integration.Tests/Integration/StalwartClientIntegrationTests.cs`
+- `tests/StalwartMigration.Integration.Tests/Fixtures/StalwartTestFixture.cs` (added `StalwartCollection` collection-fixture definition)
+- `tests/StalwartMigration.Integration.Tests/Fixtures/DockerHelperTests.cs` (`StalwartTestFixtureTests` switched from `IClassFixture<StalwartTestFixture>` to `[Collection(StalwartCollection.Name)]` so both classes share the one container)
+- `src/StalwartMigration/Infrastructure/Stalwart/StalwartClient.cs` (schema method + decompression fixes above)
 
-**Notes**: Supersedes original T6. No `TestDataInitializer`/`StalwartApiHelper` — call `StalwartClient` methods directly from the test body; only extract a shared helper if duplication actually shows up across 3+ tests.
+**Notes**: Supersedes original T6. No `TestDataInitializer`/`StalwartApiHelper` — tests call `StalwartClient` methods directly from the test body. Domain/account/alias CRUD integration testing is now blocked on a JMAP-client decision (see `stalwart-test-server-plan.md`), not on this task.
 
 ---
 
 ### Task 5 (revised): AccountManager smoke test
 **ID**: T5  
 **Priority**: Medium  
-**Status**: Pending  
-**Estimated**: 0.5 day  
+**Status**: Blocked — depends on the JMAP question below, not just implementation time  
+**Estimated**: 0.5 day (once unblocked)  
 **Assignee**: (unassigned)
+
+**Blocked because**: every candidate test here — `DomainExistsAsync`, `AccountExistsAsync`, `CreateAccountsAsync`, `CreateDomainsAsync` — is a thin wrapper over the same `/api/domains`/`/api/accounts`/`/api/aliases` REST paths that T4 confirmed return 404 on a real Stalwart server. There's nothing in `AccountManager`'s domain/account/alias surface that isn't already broken for the reason T4 documents. Revisit once there's a decision on JMAP support (see `stalwart-test-server-plan.md`); until then this would just be T4's finding restated through a different class.
 
 **Description**: Add a small `Integration/AccountManagerIntegrationTests.cs` covering the parts of `AccountManager`'s logic that add value over calling `StalwartClient` directly — `DomainExistsAsync`/`AccountExistsAsync`, and one of the batch helpers (`CreateAccountsAsync` or `CreateDomainsAsync`). Reuses the same shared fixture; not a parallel CRUD matrix — that's already covered by T4 since `AccountManager`'s CRUD methods are thin wrappers over `StalwartClient`.
 
@@ -210,10 +221,12 @@ This replaces the original Phase 2 (T4/T5) and Phase 3 (T6/T7) with two tasks sc
 ## ✅ Checkpoint: Real API Integration Tests
 
 **Verification**:
-- [ ] StalwartClient CRUD integration tests pass (T4)
-- [ ] AccountManager smoke test passes (T5)
-- [ ] Total integration suite runtime stays in the tens-of-seconds range
-- [ ] No leaked Stalwart state between test runs (verify via `docker volume ls` / a fresh domain list after a full run)
+- [x] StalwartClient integration tests pass (T4 — scope revised to real endpoints only, see above)
+- [ ] AccountManager smoke test passes (T5) — blocked on the JMAP question
+- [x] Total integration suite runtime stays in the tens-of-seconds range (16/16 tests, ~20s)
+- [x] No leaked Stalwart state between test runs (`docker ps`/`docker volume ls` clean before and after)
+
+**Blockers**: T5 is blocked pending a decision on JMAP support for domain/account/alias management (see `stalwart-test-server-plan.md`).
 
 ---
 
@@ -351,8 +364,8 @@ Both tasks below are explicitly **not** planned for near-term work. Revisit only
 | Create Docker Test Infrastructure | T1 | High | ✅ Done | 2-3 days | - |
 | Create Test Configuration | T2 | High | ✅ Done | 1 day | - |
 | Setup Test Fixture Base Class | T3 | High | ✅ Done | 1-2 days | - |
-| StalwartClient CRUD integration tests (revised) | T4 | High | Pending | 0.5-1 day | - |
-| AccountManager smoke test (revised) | T5 | Medium | Pending | 0.5 day | - |
+| StalwartClient integration tests (revised) | T4 | High | ✅ Done | 0.5-1 day | - |
+| AccountManager smoke test (revised) | T5 | Medium | Blocked (JMAP question) | 0.5 day | - |
 | ~~Test StalwartClient against Real Server~~ | T6 | High | Superseded by T4 | - | - |
 | ~~Test AccountManager Integration~~ | T7 | High | Superseded by T5 | - | - |
 | Create End-to-End Migration Test | T8 | Medium | Backlog | 3-4 days | - |
@@ -362,16 +375,16 @@ Both tasks below are explicitly **not** planned for near-term work. Revisit only
 ### Phase Completion
 
 - **Phase 1: Infrastructure Setup**: 100% (3/3 tasks) ✅
-- **Phase 2 (revised): Real API Integration Tests**: 0% (0/2 tasks) — next up
+- **Phase 2 (revised): Real API Integration Tests**: 50% (1/2 tasks) — T4 done, T5 blocked on the JMAP question
 - **Phase 4: Migration Workflow Tests**: Backlog, not scheduled
 - **Phase 5: Test Infrastructure Polish**: Backlog, not scheduled
 
-**Overall Completion**: Phase 1 done; Phase 2 (revised) is the active next milestone.
+**Overall Completion**: Phase 1 done. Phase 2 T4 done (scope revised: real REST endpoints only — auth, account info, discovery, schema, tokens). T5 and any future domain/account/alias integration coverage are blocked pending a decision on whether/how to support Stalwart's JMAP interface, since that's what actually manages domains/accounts/aliases on a real server, not the REST paths `StalwartClient`'s CRUD methods currently target.
 
 ### Milestones
 
 - [x] **Milestone 1**: Infrastructure Setup Complete (Phase 1) — 2026-07-12
-- [ ] **Milestone 2**: Real API Integration Tests Complete (Phase 2, revised — T4/T5)
+- [~] **Milestone 2**: Real API Integration Tests (Phase 2, revised — T4 done 2026-07-12, T5 blocked)
 - [ ] **Milestone 3 (backlog)**: Migration Workflow Test (Phase 4)
 - [ ] **Milestone 4 (backlog)**: Test Infrastructure Polish (Phase 5)
 
