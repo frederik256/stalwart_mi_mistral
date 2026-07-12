@@ -24,6 +24,7 @@ public class DockerHelper : IDisposable
     
     private readonly DockerClient _dockerClient;
     private readonly string _containerName;
+    private readonly string _image;
     private readonly int _hostPort;
     private string _adminPassword;
     private string? _containerId;
@@ -67,6 +68,7 @@ public class DockerHelper : IDisposable
         _dockerClient = config.CreateClient();
         
         _containerName = containerName ?? $"stalwart-test-{Guid.NewGuid():N}";
+        _image = image;
         _hostPort = hostPort > 0 ? hostPort : GetAvailablePort();
         _adminPassword = adminPassword ?? Guid.NewGuid().ToString("N");
         _containerId = null;
@@ -112,7 +114,7 @@ public class DockerHelper : IDisposable
             new CreateContainerParameters
             {
                 Name = _containerName,
-                Image = DefaultImage,
+                Image = _image,
                 HostConfig = new HostConfig
                 {
                     PortBindings = new Dictionary<string, IList<PortBinding>>
@@ -243,13 +245,14 @@ public class DockerHelper : IDisposable
                     var inspect = _dockerClient.Containers.InspectContainerAsync(_containerId).GetAwaiter().GetResult();
                     if (inspect.Config?.Env != null)
                     {
+                        var envPrefix = $"{AdminCredentialEnvVar}=";
                         foreach (var env in inspect.Config.Env)
                         {
-                            if (env.StartsWith("STALWART_RECOVERY_ADMIN=") && env.Length > 22)
+                            if (env.StartsWith(envPrefix) && env.Length > envPrefix.Length)
                             {
                                 // The env var format is "STALWART_RECOVERY_ADMIN=username:password"
                                 // We need to extract just the password part
-                                var fullValue = env.Substring(22);
+                                var fullValue = env.Substring(envPrefix.Length);
                                 var parts = fullValue.Split(':', 2);
                                 if (parts.Length == 2)
                                 {
@@ -502,11 +505,16 @@ public class DockerHelper : IDisposable
                 var inspect = _dockerClient.Containers.InspectContainerAsync(_containerId).GetAwaiter().GetResult();
                 if (inspect.Config?.Env != null)
                 {
+                    var envPrefix = $"{AdminCredentialEnvVar}=";
                     foreach (var env in inspect.Config.Env)
                     {
-                        if (env.StartsWith("STALWART_RECOVERY_ADMIN=") && env.Length > 22)
+                        if (env.StartsWith(envPrefix) && env.Length > envPrefix.Length)
                         {
-                            password = env.Substring(22);
+                            // Format is "STALWART_RECOVERY_ADMIN=username:password";
+                            // GetAdminCredentials only wants the password part.
+                            var fullValue = env.Substring(envPrefix.Length);
+                            var parts = fullValue.Split(':', 2);
+                            password = parts.Length == 2 ? parts[1] : fullValue;
                             break;
                         }
                     }
