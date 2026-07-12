@@ -1,0 +1,35 @@
+version: '3.8'
+
+# Docker Compose configuration for Stalwart integration tests
+# This file provides an alternative to programmatic container management
+# and can be used for manual testing or debugging.
+
+services:
+  stalwart-test:
+    image: stalwartlabs/stalwart:v0.16
+    container_name: stalwart-test
+    ports:
+      - "8080:8080"
+    volumes:
+      - stalwart-test-etc:/etc/stalwart
+      - stalwart-test-data:/var/lib/stalwart
+    environment:
+      - STALWART_RECOVERY_ADMIN=admin:testpassword123
+      - RUST_LOG=info
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      - stalwart-test-network
+
+volumes:
+  stalwart-test-etc:
+  stalwart-test-data:
+
+networks:
+  stalwart-test-network:
+    driver: bridge
