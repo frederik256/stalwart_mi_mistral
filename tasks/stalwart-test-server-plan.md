@@ -14,6 +14,20 @@ The existing project (`StalwartMigration.Integration.Tests`) currently has an em
 - Unit tests for the client (constructor, authentication, etc.)
 - Docker-based infrastructure knowledge (from SPEC.md)
 
+## Status Update (2026-07-12): Phase 1 done, Phase 2+ strategy revised
+
+Phase 1 (DockerHelper, StalwartTestFixture, test configuration) is implemented and green: one shared Stalwart container boots for the whole integration test run in ~20s, and the health check performs a real `authCode` login rather than probing with an empty body. 7/7 infrastructure sanity tests pass reliably with no leaked containers or volumes.
+
+The rest of this plan (Phases 2-5, below) was written before that container existed and over-specifies the follow-on work — it asks for dedicated `TestDataInitializer`, `StalwartApiHelper`, `TestCredentialsManager`, `CredentialGenerator`, per-class `ParallelStalwartFixture`, and `TestLogger`/`DiagnosticCollector` classes before a single real test has exercised the server. Revised direction, in priority order:
+
+1. **Leverage the existing shared fixture, don't multiply containers.** `StalwartTestFixture` already starts one Stalwart instance per test run via `IClassFixture`. New tests should reuse `fixture.StalwartClient` directly rather than spinning up per-class or per-test instances — that's what keeps total runtime in the tens-of-seconds range instead of minutes.
+2. **Configure the server through the CRUD surface that already exists**, not a new abstraction. `StalwartClient` and `AccountManager` both already expose full `Create/Get/Update/Delete` for domains, accounts, and aliases (`StalwartClient.cs:186-360`, `AccountManager.cs:60-426`). A test that needs a domain and account calls those methods directly; a dedicated "TestDataInitializer" layer is unwarranted until real duplication shows up across more than a couple of test files.
+3. **Isolate tests by naming and per-test cleanup, not by container.** Since the server is shared and long-lived, each test creates its own uniquely-named domain (e.g. `{Guid:N}.test.invalid`) and deletes what it created in a `finally` or `IAsyncLifetime.DisposeAsync`, so tests can't collide and the server doesn't accumulate state across a run. Deleting a domain cascades its accounts/aliases in Stalwart, so cleanup is typically a single call.
+4. **Keep footprint proportional to what actually needs verifying.** Target CRUD round-trip smoke coverage (create → read back → update → delete, plus one realistic error case per resource type) rather than an exhaustive matrix. This is what makes "limited footprint, limited run time" achievable — a dozen or so short-lived, self-cleaning tests against the one shared container.
+5. **Defer, don't build yet:** per-class isolated Stalwart instances (original Task 9), dedicated logging/diagnostics classes beyond what `ILogger` and xUnit output already give us (original Task 10), the full end-to-end migration workflow test (original Task 8, Phase 4), SSE/live-telemetry coverage, and credential rotation/`TestCredentialsManager` (a single shared container for the run doesn't need rotating credentials). Revisit any of these only if the lean approach proves insufficient — e.g., if runtime balloons or tests start fighting over server state.
+
+The task list below is left in place for historical context but Phases 2-5 acceptance criteria should be read through the lens above; concrete near-term tasks are tracked in `stalwart-test-server-todo.md`.
+
 ## Architecture Decisions
 
 ### 1. Containerized Deployment

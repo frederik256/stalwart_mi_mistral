@@ -15,13 +15,24 @@ This task list implements the plan described in `stalwart-test-server-plan.md`. 
 
 ## 🎯 Current Status
 
-- [ ] **Phase 1**: Infrastructure Setup (0/3 tasks)
-- [ ] **Phase 2**: Test Data Setup (0/2 tasks)
-- [ ] **Phase 3**: API Integration Tests (0/2 tasks)
-- [ ] **Phase 4**: Migration Workflow Tests (0/1 task)
-- [ ] **Phase 5**: Test Infrastructure Polish (0/2 tasks)
+- [x] **Phase 1**: Infrastructure Setup (3/3 tasks) — done 2026-07-12
+- [ ] **Phase 2 (revised)**: Real API Integration Tests, lean (0/2 tasks) — see below, replaces original Phase 2+3
+- [~] **Phase 3 (original)**: Superseded by revised Phase 2 — original Task 6/7 split no longer applies
+- [ ] **Phase 4**: Migration Workflow Tests — Backlog, not started
+- [ ] **Phase 5**: Test Infrastructure Polish — Backlog, mostly deferred (see notes)
 
-**Total**: 0/10 tasks completed
+**Total**: 3/10 tasks completed under the original breakdown; see "Revised Plan" below for what's actually being tracked going forward.
+
+---
+
+## 🔄 Revised Plan (2026-07-12)
+
+The original Phase 2/3/5 tasks (T4, T5, T9, T10) called for dedicated `TestDataInitializer`, `StalwartApiHelper`, `TestCredentialsManager`, `CredentialGenerator`, `ParallelStalwartFixture`, and `TestLogger`/`DiagnosticCollector` classes. That's more infrastructure than a first batch of real tests needs. See `stalwart-test-server-plan.md` → "Status Update (2026-07-12)" for the full rationale. Short version:
+
+- Reuse the one shared `StalwartTestFixture` container for all new tests (already built, ~20s startup for the whole run) — don't spin up per-class instances.
+- Configure the server for each test via the CRUD methods `StalwartClient`/`AccountManager` already expose (`CreateDomainAsync`, `CreateAccountAsync`, `CreateAliasAsync`, etc.) — no new abstraction layer.
+- Isolate tests with unique per-test domain names (e.g. `{Guid:N}.test.invalid`) and clean up what each test creates (deleting a domain cascades its accounts/aliases) — no per-test containers.
+- Original T4/T5/T6/T7 are replaced by the two tasks below. T8 (E2E migration), T9 (parallel instances), T10 (dedicated logging) remain backlog items, not actively planned, until the lean approach shows a concrete gap.
 
 ---
 
@@ -30,24 +41,24 @@ This task list implements the plan described in `stalwart-test-server-plan.md`. 
 ### Task 1: Create Docker Test Infrastructure
 **ID**: T1  
 **Priority**: High  
-**Status**: Pending  
+**Status**: ✅ Done (2026-07-12)  
 **Estimated**: 2-3 days  
 **Assignee**: (unassigned)
 
 **Description**: Set up Docker-based infrastructure for running Stalwart in tests.
 
 **Acceptance Criteria**:
-- [ ] `DockerHelper` class to manage container lifecycle (start/stop/cleanup)
-- [ ] Method to retrieve bootstrap credentials from container logs
-- [ ] Health check endpoint verification (`/api/health`)
-- [ ] Automatic cleanup on test teardown
+- [x] `DockerHelper` class to manage container lifecycle (start/stop/cleanup)
+- [x] Method to retrieve bootstrap credentials from container logs
+- [x] Health check endpoint verification — real `authCode` login against `/api/auth`, not `/api/health` (Stalwart v0.16 doesn't expose that path; an empty-body probe always returned 400)
+- [x] Automatic cleanup on test teardown, including when container startup itself fails (xUnit skips `DisposeAsync` when `InitializeAsync` throws, so cleanup happens in a catch block)
 
 **Verification Checklist**:
-- [ ] Can start Stalwart container programmatically
-- [ ] Can retrieve admin credentials from container logs
-- [ ] Can verify API is accessible at `http://localhost:8080`
-- [ ] Container is properly cleaned up after tests
-- [ ] Code compiles without errors
+- [x] Can start Stalwart container programmatically
+- [x] Can retrieve admin credentials from container logs
+- [x] Can verify API is accessible at `http://localhost:{random port}`
+- [x] Container is properly cleaned up after tests
+- [x] Code compiles without errors
 
 **Dependencies**: None  
 
@@ -62,23 +73,23 @@ This task list implements the plan described in `stalwart-test-server-plan.md`. 
 ### Task 2: Create Test Configuration
 **ID**: T2  
 **Priority**: High  
-**Status**: Pending  
+**Status**: ✅ Done (2026-07-12)  
 **Estimated**: 1 day  
 **Assignee**: (unassigned)
 
 **Description**: Create configuration files and models specifically for integration testing.
 
 **Acceptance Criteria**:
-- [ ] Test-specific Stalwart configuration file (`appsettings.test.json`)
-- [ ] Test admin credentials management class
-- [ ] Docker container configuration (ports, volumes)
-- [ ] Environment variable configuration for testing
+- [x] Test-specific Stalwart configuration file (`appsettings.test.json`)
+- [x] Test admin credentials management — handled by `DockerHelper`/`StalwartTestFixture` directly (random password per run via `STALWART_RECOVERY_ADMIN`); no separate class needed since the container isn't shared across processes
+- [x] Docker container configuration (ports, volumes) — random host port, per-container volume names so parallel test classes don't share RocksDB data
+- [x] Environment variable configuration for testing
 
 **Verification Checklist**:
-- [ ] Configuration file is valid JSON
-- [ ] Configuration can be loaded by test fixtures
-- [ ] All required ports are properly mapped
-- [ ] Configuration supports CI environment
+- [x] Configuration file is valid JSON
+- [x] Configuration can be loaded by test fixtures
+- [x] All required ports are properly mapped
+- [ ] Configuration supports CI environment — not yet verified in an actual CI runner
 
 **Dependencies**: None  
 
@@ -94,23 +105,23 @@ This task list implements the plan described in `stalwart-test-server-plan.md`. 
 ### Task 3: Setup Test Fixture Base Class
 **ID**: T3  
 **Priority**: High  
-**Status**: Pending  
+**Status**: ✅ Done (2026-07-12)  
 **Estimated**: 1-2 days  
 **Assignee**: (unassigned)
 
 **Description**: Create xUnit fixture classes for integration test setup and teardown.
 
 **Acceptance Criteria**:
-- [ ] `IClassFixture<T>` implementation for shared Stalwart instance
-- [ ] `IDisposable` implementation for cleanup
-- [ ] Lazy initialization of Stalwart container
-- [ ] Thread-safe access to shared resources
+- [x] `IClassFixture<T>` implementation for shared Stalwart instance
+- [x] `IAsyncLifetime`/`IDisposable` implementation for cleanup
+- [x] Container startup happens in `InitializeAsync`, one instance per test class run
+- [x] Fixed the double-init bug where `StalwartTestFixtureTests` re-ran `_fixture.InitializeAsync()` per test on top of xUnit's own class-fixture call
 
 **Verification Checklist**:
-- [ ] Fixture can be used with `[ClassData]` attribute
-- [ ] Multiple test classes can share the same fixture
-- [ ] Cleanup works correctly even on test failures
-- [ ] Fixture handles container startup timeouts
+- [x] Multiple test classes can share the same fixture (`IClassFixture<StalwartTestFixture>`)
+- [x] Cleanup works correctly even on test failures (cleanup added to the `InitializeAsync` catch path)
+- [x] Fixture handles container startup timeouts (120s default, configurable)
+- Note: "Lazy initialization" and "`[ClassData]`" from the original criteria don't apply to xUnit's `IClassFixture` model as actually implemented — dropped as not meaningful here.
 
 **Dependencies**: T1 (DockerHelper)  
 
@@ -125,176 +136,93 @@ This task list implements the plan described in `stalwart-test-server-plan.md`. 
 ## ✅ Checkpoint: Infrastructure Setup
 
 **Verification**:
-- [ ] All Docker infrastructure code compiles
-- [ ] Container can be started and stopped programmatically
-- [ ] Admin credentials can be retrieved
-- [ ] API health check passes
-- [ ] Cleanup removes all containers and volumes
+- [x] All Docker infrastructure code compiles
+- [x] Container can be started and stopped programmatically
+- [x] Admin credentials can be retrieved
+- [x] API health check passes (via real login, not a `/api/health` path that doesn't exist in v0.16)
+- [x] Cleanup removes all containers and volumes
 
-**Blockers**: None identified
+**Blockers**: None. Verified with a full `dotnet test` run of the solution: 7/7 integration tests, 276/276 unit tests, 39/39 CLI tests, no leaked Docker state.
 
 ---
 
-## 🗃️ Phase 2: Test Data Setup
+## 🗃️ Phase 2 (revised): Real API Integration Tests, lean
 
-### Task 4: Create Test Data Initialization
+This replaces the original Phase 2 (T4/T5) and Phase 3 (T6/T7) with two tasks scoped to the revised strategy in `stalwart-test-server-plan.md`: reuse the shared fixture, configure the server via the CRUD methods that already exist, isolate by naming + per-test cleanup rather than by container.
+
+### Task 4 (revised): StalwartClient CRUD integration tests
 **ID**: T4  
-**Priority**: Medium  
-**Status**: Pending  
-**Estimated**: 1-2 days  
-**Assignee**: (unassigned)
-
-**Description**: Implement methods to initialize test data in Stalwart (domains, accounts, aliases).
-
-**Acceptance Criteria**:
-- [ ] Method to create test domains via API
-- [ ] Method to create test accounts with known passwords
-- [ ] Method to create email aliases
-- [ ] Method to verify created resources
-- [ ] Method to clean up test data
-
-**Verification Checklist**:
-- [ ] Can create a domain and verify it exists via API
-- [ ] Can create an account and authenticate with it
-- [ ] Can create aliases and verify they work
-- [ ] Cleanup removes all test data
-- [ ] Methods handle API errors gracefully
-
-**Dependencies**: T1, T3  
-
-**Files to Create/Modify**:
-- `tests/StalwartMigration.Integration.Tests/Helpers/TestDataInitializer.cs`
-- `tests/StalwartMigration.Integration.Tests/Helpers/StalwartApiHelper.cs`
-
-**Notes**: Use the existing `StalwartClient` for API operations
-
----
-
-### Task 5: Create Test Credentials Management
-**ID**: T5  
-**Priority**: Medium  
-**Status**: Pending  
-**Estimated**: 1 day  
-**Assignee**: (unassigned)
-
-**Description**: Securely manage and rotate test credentials for Stalwart API access.
-
-**Acceptance Criteria**:
-- [ ] Secure storage of test admin credentials
-- [ ] Method to generate random passwords for test accounts
-- [ ] Credential rotation between test runs
-- [ ] No hardcoded credentials in source code
-
-**Verification Checklist**:
-- [ ] Credentials are not logged or exposed
-- [ ] Different test runs use different credentials
-- [ ] Credentials are properly disposed
-- [ ] Password generation meets complexity requirements
-
-**Dependencies**: T1, T4  
-
-**Files to Create/Modify**:
-- `tests/StalwartMigration.Integration.Tests/Security/TestCredentialsManager.cs`
-- `tests/StalwartMigration.Integration.Tests/Security/CredentialGenerator.cs`
-
-**Notes**: Consider using `SecureString` or similar for credential handling
-
----
-
-## ✅ Checkpoint: Test Data Setup
-
-**Verification**:
-- [ ] Test domains can be created and verified
-- [ ] Test accounts can be created and authenticated
-- [ ] Test data cleanup works correctly
-- [ ] No credential leaks in logs
-
-**Blockers**: None identified
-
----
-
-## 🔌 Phase 3: API Integration Tests
-
-### Task 6: Test StalwartClient against Real Server
-**ID**: T6  
 **Priority**: High  
 **Status**: Pending  
-**Estimated**: 2-3 days  
+**Estimated**: 0.5-1 day  
 **Assignee**: (unassigned)
 
-**Description**: Create integration tests that exercise the existing `StalwartClient` against a real Stalwart instance.
+**Description**: Add `Integration/StalwartClientIntegrationTests.cs`, using the existing shared `StalwartTestFixture` (`IClassFixture<StalwartTestFixture>`). Each test configures only what it needs directly through `StalwartClient` — no new helper/initializer classes.
 
 **Acceptance Criteria**:
-- [ ] Authentication tests with real credentials
-- [ ] Domain CRUD operation tests
-- [ ] Account CRUD operation tests
-- [ ] Alias CRUD operation tests
-- [ ] Error handling tests (invalid credentials, not found, etc.)
+- [ ] Domain round-trip: `CreateDomainAsync` → `GetDomainAsync`/`GetDomainByNameAsync` → `UpdateDomainAsync` → `DeleteDomainAsync`, each test using a unique domain name (e.g. `{Guid:N}.test.invalid`)
+- [ ] Account round-trip: create a domain, then `CreateAccountAsync` → `GetAccountAsync`/`GetAccountByEmailAsync` → `UpdateAccountAsync` → `DeleteAccountAsync`
+- [ ] Alias round-trip: `CreateAliasAsync` → `GetAliasAsync` → `UpdateAliasAsync` → `DeleteAliasAsync`
+- [ ] One realistic error case per resource (e.g. `GetDomainAsync` with an unknown id → 404-mapped exception)
+- [ ] Every test cleans up what it created (delete the domain it made; deleting a domain cascades its accounts/aliases) so the shared container doesn't accumulate state across the run
 
 **Verification Checklist**:
-- [ ] All `StalwartClient` methods work against real server
-- [ ] Authentication succeeds with valid credentials
-- [ ] CRUD operations return expected results
-- [ ] Error cases return appropriate exceptions
-- [ ] Tests pass consistently
+- [ ] Tests pass consistently against the shared fixture container
+- [ ] No test depends on ordering or on another test's leftover state
+- [ ] Adds no more than ~15-20s beyond the existing ~20s fixture startup (no extra containers spun up)
 
-**Dependencies**: T1, T3, T4  
+**Dependencies**: T1, T3 (both done)
 
 **Files to Create/Modify**:
 - `tests/StalwartMigration.Integration.Tests/Integration/StalwartClientIntegrationTests.cs`
 
-**Notes**: Focus on testing the public API surface of `StalwartClient`
+**Notes**: Supersedes original T6. No `TestDataInitializer`/`StalwartApiHelper` — call `StalwartClient` methods directly from the test body; only extract a shared helper if duplication actually shows up across 3+ tests.
 
 ---
 
-### Task 7: Test AccountManager Integration
-**ID**: T7  
-**Priority**: High  
+### Task 5 (revised): AccountManager smoke test
+**ID**: T5  
+**Priority**: Medium  
 **Status**: Pending  
-**Estimated**: 2 days  
+**Estimated**: 0.5 day  
 **Assignee**: (unassigned)
 
-**Description**: Create integration tests for the `AccountManager` class against real Stalwart server.
+**Description**: Add a small `Integration/AccountManagerIntegrationTests.cs` covering the parts of `AccountManager`'s logic that add value over calling `StalwartClient` directly — `DomainExistsAsync`/`AccountExistsAsync`, and one of the batch helpers (`CreateAccountsAsync` or `CreateDomainsAsync`). Reuses the same shared fixture; not a parallel CRUD matrix — that's already covered by T4 since `AccountManager`'s CRUD methods are thin wrappers over `StalwartClient`.
 
 **Acceptance Criteria**:
-- [ ] Test domain creation through AccountManager
-- [ ] Test account creation with metadata
-- [ ] Test alias creation and management
-- [ ] Test quota and settings configuration
+- [ ] `DomainExistsAsync`/`AccountExistsAsync` return correct results against real server state
+- [ ] One batch-creation method works end-to-end (e.g. `CreateAccountsAsync` for 2-3 accounts) and cleans up after itself
+- [ ] Test reuses the domain/account naming and cleanup convention from T4
 
 **Verification Checklist**:
-- [ ] AccountManager methods work against real server
-- [ ] Created resources match expected state
-- [ ] Error cases handled appropriately
-- [ ] All existing unit tests still pass
+- [ ] Tests pass against the shared fixture
+- [ ] No new Stalwart container spun up for this file
 
-**Dependencies**: T6  
+**Dependencies**: T4
 
 **Files to Create/Modify**:
 - `tests/StalwartMigration.Integration.Tests/Integration/AccountManagerIntegrationTests.cs`
 
-**Notes**: Test both success and error paths
+**Notes**: Supersedes original T7. Original T5 (`TestCredentialsManager`/`CredentialGenerator`) is dropped — there's one shared container per run with a randomly generated admin password already; credential rotation has no reason to exist until tests run against a persistent, non-ephemeral server.
 
 ---
 
-## ✅ Checkpoint: API Integration Tests
+## ✅ Checkpoint: Real API Integration Tests
 
 **Verification**:
-- [ ] StalwartClient integration tests pass
-- [ ] AccountManager integration tests pass
-- [ ] All CRUD operations work correctly
-- [ ] Error handling is correct
-
-**Blockers**: None identified
+- [ ] StalwartClient CRUD integration tests pass (T4)
+- [ ] AccountManager smoke test passes (T5)
+- [ ] Total integration suite runtime stays in the tens-of-seconds range
+- [ ] No leaked Stalwart state between test runs (verify via `docker volume ls` / a fresh domain list after a full run)
 
 ---
 
-## 🚀 Phase 4: Migration Workflow Tests
+## 🚀 Phase 4: Migration Workflow Tests (Backlog — deferred until T4/T5 land)
 
 ### Task 8: Create End-to-End Migration Test
 **ID**: T8  
-**Priority**: Medium  
-**Status**: Pending  
+**Priority**: Medium — Backlog  
+**Status**: Deferred, not planned  
 **Estimated**: 3-4 days  
 **Assignee**: (unassigned)
 
@@ -332,16 +260,20 @@ This task list implements the plan described in `stalwart-test-server-plan.md`. 
 
 ---
 
-## 🎨 Phase 5: Test Infrastructure Polish
+## 🎨 Phase 5: Test Infrastructure Polish (Backlog — deferred)
+
+Both tasks below are explicitly **not** planned for near-term work. Revisit only if the lean Phase 2 approach (one shared container, T4/T5) proves insufficient — e.g. suite runtime grows past what's acceptable, or debugging integration failures without dedicated log capture becomes a recurring problem.
 
 ### Task 9: Add Parallel Test Support
 **ID**: T9  
-**Priority**: Low  
-**Status**: Pending  
+**Priority**: Low — Backlog  
+**Status**: Deferred, not planned  
 **Estimated**: 1-2 days  
 **Assignee**: (unassigned)
 
 **Description**: Enable parallel test execution with isolated Stalwart instances.
+
+**Why deferred**: The whole integration suite already shares one container per run (~20s startup total). Per-class isolated instances only pay off once test count/runtime grows enough that the shared container becomes a bottleneck or a source of cross-test contention — neither is true yet with T4/T5's scope.
 
 **Acceptance Criteria**:
 - [ ] Each test class gets its own Stalwart instance
@@ -367,12 +299,14 @@ This task list implements the plan described in `stalwart-test-server-plan.md`. 
 
 ### Task 10: Add Test Logging and Diagnostics
 **ID**: T10  
-**Priority**: Low  
-**Status**: Pending  
+**Priority**: Low — Backlog  
+**Status**: Deferred, not planned  
 **Estimated**: 1 day  
 **Assignee**: (unassigned)
 
 **Description**: Implement comprehensive logging for integration tests to aid debugging.
+
+**Why deferred**: `StalwartClient` already logs via `ILogger`, and xUnit surfaces exceptions/stack traces per test. Add dedicated `TestLogger`/`DiagnosticCollector` classes only once real T4/T5 failures show that's not enough to diagnose them.
 
 **Acceptance Criteria**:
 - [ ] Test execution logging
@@ -414,34 +348,32 @@ This task list implements the plan described in `stalwart-test-server-plan.md`. 
 
 | Task | ID | Priority | Status | Estimate | Assignee |
 |------|----|----------|--------|----------|----------|
-| Create Docker Test Infrastructure | T1 | High | Pending | 2-3 days | - |
-| Create Test Configuration | T2 | High | Pending | 1 day | - |
-| Setup Test Fixture Base Class | T3 | High | Pending | 1-2 days | - |
-| Create Test Data Initialization | T4 | Medium | Pending | 1-2 days | - |
-| Create Test Credentials Management | T5 | Medium | Pending | 1 day | - |
-| Test StalwartClient against Real Server | T6 | High | Pending | 2-3 days | - |
-| Test AccountManager Integration | T7 | High | Pending | 2 days | - |
-| Create End-to-End Migration Test | T8 | Medium | Pending | 3-4 days | - |
-| Add Parallel Test Support | T9 | Low | Pending | 1-2 days | - |
-| Add Test Logging and Diagnostics | T10 | Low | Pending | 1 day | - |
+| Create Docker Test Infrastructure | T1 | High | ✅ Done | 2-3 days | - |
+| Create Test Configuration | T2 | High | ✅ Done | 1 day | - |
+| Setup Test Fixture Base Class | T3 | High | ✅ Done | 1-2 days | - |
+| StalwartClient CRUD integration tests (revised) | T4 | High | Pending | 0.5-1 day | - |
+| AccountManager smoke test (revised) | T5 | Medium | Pending | 0.5 day | - |
+| ~~Test StalwartClient against Real Server~~ | T6 | High | Superseded by T4 | - | - |
+| ~~Test AccountManager Integration~~ | T7 | High | Superseded by T5 | - | - |
+| Create End-to-End Migration Test | T8 | Medium | Backlog | 3-4 days | - |
+| Add Parallel Test Support | T9 | Low | Backlog | 1-2 days | - |
+| Add Test Logging and Diagnostics | T10 | Low | Backlog | 1 day | - |
 
 ### Phase Completion
 
-- **Phase 1: Infrastructure Setup**: 0% (0/3 tasks)
-- **Phase 2: Test Data Setup**: 0% (0/2 tasks)
-- **Phase 3: API Integration Tests**: 0% (0/2 tasks)
-- **Phase 4: Migration Workflow Tests**: 0% (0/1 task)
-- **Phase 5: Test Infrastructure Polish**: 0% (0/2 tasks)
+- **Phase 1: Infrastructure Setup**: 100% (3/3 tasks) ✅
+- **Phase 2 (revised): Real API Integration Tests**: 0% (0/2 tasks) — next up
+- **Phase 4: Migration Workflow Tests**: Backlog, not scheduled
+- **Phase 5: Test Infrastructure Polish**: Backlog, not scheduled
 
-**Overall Completion**: 0%
+**Overall Completion**: Phase 1 done; Phase 2 (revised) is the active next milestone.
 
 ### Milestones
 
-- [ ] **Milestone 1**: Infrastructure Setup Complete (Phase 1)
-- [ ] **Milestone 2**: Test Data Setup Complete (Phase 2)
-- [ ] **Milestone 3**: API Integration Tests Complete (Phase 3)
-- [ ] **Milestone 4**: Migration Workflow Tests Complete (Phase 4)
-- [ ] **Milestone 5**: Test Infrastructure Polish Complete (Phase 5)
+- [x] **Milestone 1**: Infrastructure Setup Complete (Phase 1) — 2026-07-12
+- [ ] **Milestone 2**: Real API Integration Tests Complete (Phase 2, revised — T4/T5)
+- [ ] **Milestone 3 (backlog)**: Migration Workflow Test (Phase 4)
+- [ ] **Milestone 4 (backlog)**: Test Infrastructure Polish (Phase 5)
 
 ---
 
@@ -531,7 +463,7 @@ curl -f http://localhost:8080/api/health
 ## 🏷️ Tags
 
 - `infrastructure` (T1, T2, T3, T9, T10)
-- `api` (T6, T7)
+- `api` (T4, T5 — revised; supersede original T6, T7)
 - `migration` (T8)
 - `configuration` (T2, T5)
 - `testing` (all)
